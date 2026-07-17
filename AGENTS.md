@@ -51,6 +51,11 @@ Canonical skills:
 **Pipeline:** For each phase in order, route to the plan's designated canonical agent (`code` / `docs` / `infra` / `test-runner` / `explorer` / etc.); verify acceptance criteria before advancing.
 **Guardrails:** Never commits or pushes — agents edit files, the user commits. Never works on `main` (uses the plan's branch). Honours each phase's agent designation exactly; stops on a failed phase.
 
+### initialize
+**Purpose:** One-time environment reconciliation. Discovers applicable MCP servers (via the MCP Servers discovery → policy-check → install flow) and, with user approval, installs and wires them into the `infra` and `planner` agents. Then verifies every agent's configured model exists in the current tool and, for any missing model, prompts the user to pick the closest available match from a dropdown and rewrites the agent files.
+**Pipeline:** MCP discovery → user approval → install + wire agents → model availability check → user picks replacements → rewrite agent files.
+**Guardrails:** Never commits or pushes. Only edits agent files and MCP config — never source code. Never installs a policy-blocked or unapproved server. Idempotent.
+
 ---
 
 ## Delivery Rules
