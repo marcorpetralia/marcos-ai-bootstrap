@@ -1,9 +1,10 @@
 # marcos-ai-bootstrap
 
-A tool-agnostic AI agent/skill network (planner, code, docs, infra, explorer, test-runner,
-log-reader, triage, investigate) plus a `watch-ci` / `planner` / `implement` skill pipeline —
-defined once in [`AGENTS.md`](./AGENTS.md) and [`AGENTS-BOOTSTRAP.md`](./AGENTS-BOOTSTRAP.md),
-and materialised for **Claude Code**, **Codex**, and **GitHub Copilot CLI**.
+AI tools for doing work. No overcomplications.
+
+Tool-agnostic agent/skill network that is built around a basic flow of plan -> implement -> deploy -> fix -> deploy etc.
+
+Currently supporting **Claude Code**, **Codex**, and **GitHub Copilot CLI** but easily adjustable to fit your workflow.
 
 See [`HUMAN.md`](./HUMAN.md) for the day-to-day workflow once the network is set up.
 
