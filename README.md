@@ -22,8 +22,8 @@ npx marcos-ai-bootstrap --claude --codex # combine any subset
 npx marcos-ai-bootstrap --all            # every tool at once
 ```
 
-Run it from the root of the repository you want to bootstrap. It writes `AGENTS.md`,
-`AGENTS-BOOTSTRAP.md`, and `HUMAN.md` (the tool-agnostic rules + human guide) alongside
+Run it from the root of the repository you want to bootstrap. It writes `AGENTS.md`
+and `HUMAN.md` (the tool-agnostic rules + human guide) alongside
 the agent/skill files for whichever tool(s) you selected:
 
 | Flag | Writes |
@@ -55,23 +55,62 @@ marcos-ai-bootstrap --all
 
 ## Repository layout
 
-- `AGENTS.md` — tool-agnostic rules: guardrails, delivery/documentation rules, the
-  canonical agent roles, and the canonical skills (`watch-ci`, `planner`, `implement`).
-- `AGENTS-BOOTSTRAP.md` — the source of truth for each tool's materialised agent/skill
-  files, model tier mappings, and MCP server discovery/policy flow.
+- `src/AGENTS.md`, `src/HUMAN.md` — the **canonical, shipped** copies. These are the source
+  of truth the CLI reads and writes into target repos (as root-level `AGENTS.md`/`HUMAN.md`).
+- `AGENTS.md`, `HUMAN.md` (repo root) — this repository's **own self-hosting** copies, used
+  by the agent network running against this repo. Kept separate from the shipped `src/` copies
+  and not published to npm.
 - `.claude/`, `.codex/`, `.github/`, `.agents/` — the already-materialised, checked-in
   agent/skill files for this repo itself, and the templates the `marcos-ai-bootstrap` CLI ships
   and copies into other repositories.
-- `bin/ai-bootstrap.js`, `lib/materialize.js` — the CLI implementation.
-- `extract-agents.py` — maintainer tool: regenerates the `.claude/`, `.codex/`,
-  `.github/` template files from `AGENTS-BOOTSTRAP.md` after editing it. Run this after
-  changing `AGENTS-BOOTSTRAP.md`, then commit the regenerated templates so `marcos-ai-bootstrap`
-  ships the update.
+- `src/bin/ai-bootstrap.js`, `src/lib/materialize.js` — the CLI implementation.
+- `src/AGENTS-BOOTSTRAP.md` — maintainer-only source of truth for each tool's
+  materialised agent/skill prompt bodies, model tier mappings, and MCP server
+  discovery/policy flow. **Not published to npm and not copied into target repos** —
+  the materialised agent/skill files under `.claude/`, `.codex/`, `.github/`, `.agents/`
+  are the shipped source of truth.
+- `src/extract-agents.py` — maintainer tool: regenerates the `.claude/`, `.codex/`,
+  `.github/`, `.agents/` template files at the repo root from `src/AGENTS-BOOTSTRAP.md`
+  after editing it. Run this after changing `src/AGENTS-BOOTSTRAP.md`, then commit the
+  regenerated templates so `marcos-ai-bootstrap` ships the update.
 
 ## Maintaining this repo
 
-1. Edit `AGENTS-BOOTSTRAP.md` (the source of truth for agent/skill prompt bodies).
-2. Run `python extract-agents.py` to regenerate the materialised template files.
-3. Run `node bin/ai-bootstrap.js --all --dry-run --dest <scratch-dir>` to sanity-check
+1. Edit `src/AGENTS-BOOTSTRAP.md` (the source of truth for agent/skill prompt bodies).
+2. Run `python src/extract-agents.py` to regenerate the materialised template files.
+3. Run `node src/bin/ai-bootstrap.js --all --dry-run --dest <scratch-dir>` to sanity-check
    the CLI still packages everything correctly.
 4. Commit the changes.
+
+## Releasing to npm
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please)
+via `.github/workflows/release.yml`, so no one commits a version bump or pushes to `main`
+directly.
+
+How it works:
+
+1. On every push to `main`, release-please opens/updates a **Release PR** that bumps the
+   version in `package.json` and updates `CHANGELOG.md`, based on the conventional-commit
+   messages since the last release.
+2. When you're ready to ship, **merge the Release PR**. That merge creates the git tag and
+   a GitHub Release.
+3. The same workflow then publishes to npm with `npm publish --provenance --access public`
+   using OIDC **trusted publishing** (no stored `NPM_TOKEN`).
+
+The published package appears at
+[npmjs.com/package/marcos-ai-bootstrap](https://www.npmjs.com/package/marcos-ai-bootstrap).
+
+Bump size is derived from your commit messages. While the package is pre-1.0, the config
+(`bump-minor-pre-major`, `bump-patch-for-minor-pre-major`) keeps breaking changes off the
+major version:
+
+| Commit type | Result (pre-1.0) |
+|---|---|
+| `fix:` / `feat:` / `refactor:` … | patch (e.g. `0.1.0` → `0.1.1`) |
+| `feat!:` or a `BREAKING CHANGE:` footer | minor (e.g. `0.1.0` → `0.2.0`) |
+| any commit with a `Release-As: X.Y.Z` footer | forces exactly that version |
+
+Cut `1.0.0` with a `Release-As: 1.0.0` commit when the API is stable; after that, standard
+SemVer applies (`feat:` → minor, breaking → major). Non-releasable commits (e.g. `docs:`,
+`ci:`) won't create a Release PR on their own.

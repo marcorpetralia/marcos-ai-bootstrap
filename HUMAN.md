@@ -10,18 +10,16 @@ Fastest path — use the `marcos-ai-bootstrap` CLI (no AI turn required, works i
 npx marcos-ai-bootstrap --copilot   # or --claude, --codex, or --all
 ```
 
-This instantly writes `AGENTS.md`, `AGENTS-BOOTSTRAP.md`, `HUMAN.md`, and the agent/skill
-files for the tool(s) you chose into the current directory. See the root `README.md` for
-all flags (`--force`, `--dry-run`, `--dest`).
+This instantly writes `AGENTS.md`, `HUMAN.md`, and the fully materialised agent/skill
+files for the tool(s) you chose into the current directory. That's it — the agents and
+skills are ready to use immediately. See the root `README.md` for all flags (`--force`,
+`--dry-run`, `--dest`).
 
-Alternatively, do it manually via your AI assistant:
+Once the files are written:
 
-1. Ensure the following files are present in the repo root:
-   - `AGENTS.md`
-   - `AGENTS-BOOTSTRAP.md`
-   - `HUMAN.md`
+1. Confirm `AGENTS.md`, `HUMAN.md`, and your tool's agent/skill files are present in the repo.
 2. Switch to your most powerful model at medium effort using **`/model`** e.g. opus 4.8 @ medium effort
-3. Ask your AI assistant to: **"Implement `AGENTS-BOOTSTRAP.md`"** - This materialises the agent and skill network for your tool.
+3. Run the **`/initialize`** skill once to reconcile MCP servers, plan-document location, and model IDs with your environment.
 4. **`/clear`** — Clear the context window.
 5. use **`/model`** to switch your model to your most powerful model @ low effort (to save tokens)
 

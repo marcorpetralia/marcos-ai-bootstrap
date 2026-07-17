@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Placeholder — replace with real checks (tests, lint, build, package sanity).
+      # e.g. `npm ci`, `npm test`, `npm run lint`,
+      #      `node src/bin/ai-bootstrap.js --all --dry-run --dest "$RUNNER_TEMP/aib-check"`
+      - name: Placeholder check
+        run: echo "CI placeholder — add tests and checks here."

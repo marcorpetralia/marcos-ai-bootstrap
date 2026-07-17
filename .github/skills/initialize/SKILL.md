@@ -1,9 +1,9 @@
 ---
 name: initialize
-description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents, then verifies every agent's configured model exists in GitHub Copilot CLI and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then verifies every agent's configured model exists in GitHub Copilot CLI and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
 ---
 
-You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in two phases. This skill only edits agent files and MCP config; it never touches source code and never commits.
+You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in three phases. This skill only edits agent and skill files and MCP config; it never touches source code and never commits.
 
 ## Phase 1 — MCP server discovery & wiring
 
@@ -35,9 +35,18 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 Role-specific override: `infra-copilot` uses `gpt-5.4`.
 
+## Phase 3 — Documentation location reconciliation
+
+1. Inspect the repo to discover where plan and design documents are actually kept. Look for an existing plans directory (e.g. `documents/plans/`, `docs/plans/`, `plans/`, `.plans/`) that already contains dated plan files, and check `README.md`, `AGENTS.md`, and any `docs/` index for a documented convention. Record the location that already holds the most plans, or the one the docs declare canonical.
+2. Compare the discovered location against the canonical `documents/plans/` path referenced by the `planner-copilot`, `planner-discovery-copilot`, `implement`, and `docs-copilot` agents/skills.
+3. If they differ (plans already live somewhere else), STOP and ask the user — via a dropdown prompt (multiple choice) — whether to wire the agents to the existing location, keep the canonical `documents/plans/`, or use a different path they specify. Never rewrite the location without explicit user confirmation.
+4. On confirmation, update every reference to the plans directory so the agents write to and read from the correct place: the `planner-copilot` and `planner-discovery-copilot` agents, the `planner` and `implement` skills, and the `docs-copilot` agent's plan-document references. Leave all other paths untouched.
+5. Report the resolved plans location and the list of edited files.
+
 ## Guardrails
-- Never commit or push — you edit agent files and MCP config; the user commits.
+- Never commit or push — you edit agent and skill files and MCP config; the user commits.
 - Never install an MCP server that policy blocks or that the user has not approved.
 - Never let an MCP server perform mutating operations against shared or production environments; the infra guardrails still apply.
-- Only edit files under `.github/agents/` and the tool's MCP config. Do not modify source code.
-- Idempotent: re-running makes no changes when servers are already wired and every configured model is available.
+- Never change the plans location without explicit user confirmation.
+- Only edit files under `.github/agents/`, `.github/skills/`, and the tool's MCP config. Do not modify source code.
+- Idempotent: re-running makes no changes when servers are already wired, the plans location already matches, and every configured model is available.

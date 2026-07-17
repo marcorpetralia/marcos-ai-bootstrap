@@ -20,7 +20,7 @@ Tool flags (combine as many as you like):
   --all             All of the above
 
 Always written alongside any tool flag:
-  AGENTS.md, AGENTS-BOOTSTRAP.md, HUMAN.md (tool-agnostic rules + human guide)
+  AGENTS.md, HUMAN.md (tool-agnostic rules + human guide)
 
 Options:
   --dest <path>     Target directory (default: current working directory)

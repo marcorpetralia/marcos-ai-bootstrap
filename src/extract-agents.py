@@ -27,7 +27,11 @@ import os
 import re
 import sys
 
-DEFAULT_SOURCE = "AGENTS-BOOTSTRAP.md"
+DEFAULT_SOURCE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "AGENTS-BOOTSTRAP.md")
+
+# Materialised template files are written to the repository root (the parent of the
+# src/ directory that holds this script), not next to the source-of-truth document.
+OUTPUT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PATTERN = re.compile(
     r"^### `(?P<path>[^`]+)`\n(?P<fence>`{3,})[a-zA-Z]*\n(?P<body>.*?)\n(?P=fence)$",
@@ -39,7 +43,7 @@ def extract(source_path: str) -> list[str]:
     text = open(source_path, encoding="utf-8").read()
     matches = list(PATTERN.finditer(text))
 
-    base_dir = os.path.dirname(os.path.abspath(source_path)) or "."
+    base_dir = OUTPUT_ROOT
     written = []
     for m in matches:
         rel_path = m.group("path").strip()
