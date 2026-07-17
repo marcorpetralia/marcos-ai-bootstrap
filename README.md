@@ -98,20 +98,19 @@ How it works:
 3. The same workflow then publishes to npm with `npm publish --provenance --access public`
    using OIDC **trusted publishing** (no stored `NPM_TOKEN`).
 
-Bump size is derived from your commit messages:
+The published package appears at
+[npmjs.com/package/marcos-ai-bootstrap](https://www.npmjs.com/package/marcos-ai-bootstrap).
 
-| Commit type | Result |
+Bump size is derived from your commit messages. While the package is pre-1.0, the config
+(`bump-minor-pre-major`, `bump-patch-for-minor-pre-major`) keeps breaking changes off the
+major version:
+
+| Commit type | Result (pre-1.0) |
 |---|---|
-| `fix:` / `chore:` / `refactor:` … | patch (`0.0.1`) |
-| `feat:` … | minor |
-| `feat!:` or a `BREAKING CHANGE:` footer | major |
+| `fix:` / `feat:` / `refactor:` … | patch (e.g. `0.1.0` → `0.1.1`) |
+| `feat!:` or a `BREAKING CHANGE:` footer | minor (e.g. `0.1.0` → `0.2.0`) |
 | any commit with a `Release-As: X.Y.Z` footer | forces exactly that version |
 
-So the default cadence is a patch per batch of merged fixes; larger releases happen simply
-by using `feat:` or a breaking-change marker. Non-releasable commits (e.g. `docs:`, `ci:`)
-won't create a Release PR on their own.
-
-**One-time setup on npmjs.com:** configure this repository and the `Release` workflow as a
-[trusted publisher](https://docs.npmjs.com/trusted-publishers) for the `marcos-ai-bootstrap`
-package so OIDC auth works without a token. Also enable "Allow GitHub Actions to create and
-approve pull requests" in the repo's Actions settings so release-please can open the Release PR.
+Cut `1.0.0` with a `Release-As: 1.0.0` commit when the API is stable; after that, standard
+SemVer applies (`feat:` → minor, breaking → major). Non-releasable commits (e.g. `docs:`,
+`ci:`) won't create a Release PR on their own.
