@@ -1,0 +1,38 @@
+{
+  "name": "marcos-ai-bootstrap",
+  "version": "1.0.0",
+  "description": "Materialise the AI-Bootstrap agent/skill network (Claude Code, Codex, GitHub Copilot CLI) into any repository from the command line.",
+  "bin": {
+    "marcos-ai-bootstrap": "bin/ai-bootstrap.js"
+  },
+  "main": "lib/materialize.js",
+  "files": [
+    "bin",
+    "lib",
+    "AGENTS.md",
+    "AGENTS-BOOTSTRAP.md",
+    "HUMAN.md",
+    ".claude",
+    ".codex",
+    ".agents",
+    ".github/agents",
+    ".github/skills"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marcorpetralia/marcos-ai-bootstrap"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "copilot",
+    "claude",
+    "codex",
+    "bootstrap",
+    "cli"
+  ]
+}
