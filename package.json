@@ -1,6 +1,6 @@
 {
   "name": "marcos-ai-bootstrap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Materialise the AI-Bootstrap agent/skill network (Claude Code, Codex, GitHub Copilot CLI) into any repository from the command line.",
   "bin": {
     "marcos-ai-bootstrap": "src/bin/ai-bootstrap.js"
