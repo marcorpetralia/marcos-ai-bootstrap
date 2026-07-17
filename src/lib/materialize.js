@@ -3,9 +3,15 @@
 const fs = require("fs");
 const path = require("path");
 
-const PACKAGE_ROOT = path.resolve(__dirname, "..");
+const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
 
-const CORE_FILES = ["AGENTS.md", "AGENTS-BOOTSTRAP.md", "HUMAN.md"];
+// Canonical, shipped source-of-truth core files live under src/ so they stay
+// separate from this repo's own self-hosting AGENTS.md/HUMAN.md at the root.
+// Each entry maps the package-relative source to the target-relative destination.
+const CORE_FILES = [
+  { src: "src/AGENTS.md", dest: "AGENTS.md" },
+  { src: "src/HUMAN.md", dest: "HUMAN.md" },
+];
 
 const TOOLS = {
   claude: {
@@ -29,9 +35,8 @@ const TOOLS = {
       file: path.join(".github", "copilot-instructions.md"),
       content:
         "# Copilot instructions\n\n" +
-        "See [AGENTS.md](../AGENTS.md) for the agent rules, and " +
-        "[AGENTS-BOOTSTRAP.md](../AGENTS-BOOTSTRAP.md) for how to materialise " +
-        "the agent and skill network for this tool.\n",
+        "See [AGENTS.md](../AGENTS.md) for the agent rules and the agent/skill " +
+        "network that has been materialised into this repository.\n",
     },
   },
 };
@@ -54,27 +59,28 @@ function listFiles(dir) {
 }
 
 /**
- * Copy a single file from the package root to the destination root,
- * preserving its relative path. Returns a status string.
+ * Copy a single file from the package root to the destination root. The source
+ * and destination relative paths may differ (e.g. src/AGENTS.md -> AGENTS.md).
+ * Returns a status object keyed by the destination path.
  */
-function copyOne(relPath, destRoot, { force, dryRun }) {
-  const src = path.join(PACKAGE_ROOT, relPath);
-  const dest = path.join(destRoot, relPath);
+function copyOne(srcRel, destRel, destRoot, { force, dryRun }) {
+  const src = path.join(PACKAGE_ROOT, srcRel);
+  const dest = path.join(destRoot, destRel);
 
   if (!fs.existsSync(src)) {
-    return { relPath, status: "missing-source" };
+    return { relPath: destRel, status: "missing-source" };
   }
 
   const exists = fs.existsSync(dest);
   if (exists && !force) {
-    return { relPath, status: "skipped-exists" };
+    return { relPath: destRel, status: "skipped-exists" };
   }
 
   if (!dryRun) {
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     fs.copyFileSync(src, dest);
   }
-  return { relPath, status: exists ? "overwritten" : "created" };
+  return { relPath: destRel, status: exists ? "overwritten" : "created" };
 }
 
 /**
@@ -96,7 +102,7 @@ function writeEntry(entry, destRoot, { force, dryRun }) {
 
 /**
  * Materialise the requested tools' agent/skill files, plus the tool-agnostic
- * core files (AGENTS.md, AGENTS-BOOTSTRAP.md, HUMAN.md), into destRoot.
+ * core files (AGENTS.md, HUMAN.md), into destRoot.
  *
  * @param {string[]} tools - subset of Object.keys(TOOLS)
  * @param {object} opts - { destRoot, force, dryRun }
@@ -109,8 +115,8 @@ function materialize(tools, opts = {}) {
 
   const results = [];
 
-  for (const relPath of CORE_FILES) {
-    results.push(copyOne(relPath, destRoot, { force, dryRun }));
+  for (const cf of CORE_FILES) {
+    results.push(copyOne(cf.src, cf.dest, destRoot, { force, dryRun }));
   }
 
   for (const toolName of tools) {
@@ -120,7 +126,7 @@ function materialize(tools, opts = {}) {
       const files = listFiles(path.join(PACKAGE_ROOT, dir));
       for (const abs of files) {
         const relPath = path.relative(PACKAGE_ROOT, abs);
-        results.push(copyOne(relPath, destRoot, { force, dryRun }));
+        results.push(copyOne(relPath, relPath, destRoot, { force, dryRun }));
       }
     }
     if (tool.entry) {

@@ -411,7 +411,7 @@ At the start of every session, verify `.claude/skills/` contains a directory for
 | watch-ci | `.claude/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-claude` → `triage-claude` → `investigate-claude` → `code-claude`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.claude/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-claude` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-claude` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.claude/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits or pushes. |
-| initialize | `.claude/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents, then verify every agent's configured model exists in Claude Code and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
+| initialize | `.claude/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Claude Code and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
 
 ---
 
@@ -564,10 +564,10 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents, then verifies every agent's configured model exists in Claude Code and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then verifies every agent's configured model exists in Claude Code and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
 ---
 
-You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in two phases. This skill only edits agent files and MCP config; it never touches source code and never commits.
+You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in three phases. This skill only edits agent and skill files and MCP config; it never touches source code and never commits.
 
 ## Phase 1 — MCP server discovery & wiring
 
@@ -597,12 +597,21 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 | Standard | `claude-sonnet-5` |
 | Fast | `claude-haiku-4-5-20251001` |
 
+## Phase 3 — Documentation location reconciliation
+
+1. Inspect the repo to discover where plan and design documents are actually kept. Look for an existing plans directory (e.g. `documents/plans/`, `docs/plans/`, `plans/`, `.plans/`) that already contains dated plan files, and check `README.md`, `AGENTS.md`, and any `docs/` index for a documented convention. Record the location that already holds the most plans, or the one the docs declare canonical.
+2. Compare the discovered location against the canonical `documents/plans/` path referenced by the `planner-claude`, `planner-discovery-claude`, `implement`, and `docs-claude` agents/skills.
+3. If they differ (plans already live somewhere else), STOP and ask the user — via a dropdown prompt (multiple choice) — whether to wire the agents to the existing location, keep the canonical `documents/plans/`, or use a different path they specify. Never rewrite the location without explicit user confirmation.
+4. On confirmation, update every reference to the plans directory so the agents write to and read from the correct place: the `planner-claude` and `planner-discovery-claude` agents, the `planner` and `implement` skills, and the `docs-claude` agent's plan-document references. Leave all other paths untouched.
+5. Report the resolved plans location and the list of edited files.
+
 ## Guardrails
-- Never commit or push — you edit agent files and MCP config; the user commits.
+- Never commit or push — you edit agent and skill files and MCP config; the user commits.
 - Never install an MCP server that policy blocks or that the user has not approved.
 - Never let an MCP server perform mutating operations against shared or production environments; the infra guardrails still apply.
-- Only edit files under `.claude/agents/` and the tool's MCP config. Do not modify source code.
-- Idempotent: re-running makes no changes when servers are already wired and every configured model is available.
+- Never change the plans location without explicit user confirmation.
+- Only edit files under `.claude/agents/`, `.claude/skills/`, and the tool's MCP config. Do not modify source code.
+- Idempotent: re-running makes no changes when servers are already wired, the plans location already matches, and every configured model is available.
 ```
 
 ---
@@ -978,7 +987,7 @@ At the start of every session, verify `.github/skills/` contains a directory for
 | watch-ci | `.github/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-copilot` → `triage-copilot` → `investigate-copilot` → `code-copilot`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.github/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-copilot` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-copilot` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.github/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits. |
-| initialize | `.github/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents, then verify every agent's configured model exists in Copilot CLI and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
+| initialize | `.github/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Copilot CLI and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
 
 ---
 
@@ -1125,10 +1134,10 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents, then verifies every agent's configured model exists in GitHub Copilot CLI and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then verifies every agent's configured model exists in GitHub Copilot CLI and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
 ---
 
-You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in two phases. This skill only edits agent files and MCP config; it never touches source code and never commits.
+You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in three phases. This skill only edits agent and skill files and MCP config; it never touches source code and never commits.
 
 ## Phase 1 — MCP server discovery & wiring
 
@@ -1160,12 +1169,21 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 Role-specific override: `infra-copilot` uses `gpt-5.4`.
 
+## Phase 3 — Documentation location reconciliation
+
+1. Inspect the repo to discover where plan and design documents are actually kept. Look for an existing plans directory (e.g. `documents/plans/`, `docs/plans/`, `plans/`, `.plans/`) that already contains dated plan files, and check `README.md`, `AGENTS.md`, and any `docs/` index for a documented convention. Record the location that already holds the most plans, or the one the docs declare canonical.
+2. Compare the discovered location against the canonical `documents/plans/` path referenced by the `planner-copilot`, `planner-discovery-copilot`, `implement`, and `docs-copilot` agents/skills.
+3. If they differ (plans already live somewhere else), STOP and ask the user — via a dropdown prompt (multiple choice) — whether to wire the agents to the existing location, keep the canonical `documents/plans/`, or use a different path they specify. Never rewrite the location without explicit user confirmation.
+4. On confirmation, update every reference to the plans directory so the agents write to and read from the correct place: the `planner-copilot` and `planner-discovery-copilot` agents, the `planner` and `implement` skills, and the `docs-copilot` agent's plan-document references. Leave all other paths untouched.
+5. Report the resolved plans location and the list of edited files.
+
 ## Guardrails
-- Never commit or push — you edit agent files and MCP config; the user commits.
+- Never commit or push — you edit agent and skill files and MCP config; the user commits.
 - Never install an MCP server that policy blocks or that the user has not approved.
 - Never let an MCP server perform mutating operations against shared or production environments; the infra guardrails still apply.
-- Only edit files under `.github/agents/` and the tool's MCP config. Do not modify source code.
-- Idempotent: re-running makes no changes when servers are already wired and every configured model is available.
+- Never change the plans location without explicit user confirmation.
+- Only edit files under `.github/agents/`, `.github/skills/`, and the tool's MCP config. Do not modify source code.
+- Idempotent: re-running makes no changes when servers are already wired, the plans location already matches, and every configured model is available.
 ```
 
 ---
@@ -1548,7 +1566,7 @@ At the start of every session, verify `.agents/skills/` contains a directory for
 | watch-ci | `.agents/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-codex` -> `triage-codex` -> `investigate-codex` -> `code-codex`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.agents/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-codex` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-codex` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.agents/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits or pushes. |
-| initialize | `.agents/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents, then verify every agent's configured model exists in Codex and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
+| initialize | `.agents/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Codex and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
 
 ---
 
@@ -1701,10 +1719,10 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents, then verifies every agent's configured model exists in Codex and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then verifies every agent's configured model exists in Codex and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
 ---
 
-You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in two phases. This skill only edits agent files and MCP config; it never touches source code and never commits.
+You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in three phases. This skill only edits agent and skill files and MCP config; it never touches source code and never commits.
 
 ## Phase 1 - MCP server discovery & wiring
 
@@ -1734,12 +1752,21 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 | Standard | `gpt-5.4` |
 | Fast | `gpt-5.4-mini` |
 
+## Phase 3 - Documentation location reconciliation
+
+1. Inspect the repo to discover where plan and design documents are actually kept. Look for an existing plans directory (e.g. `documents/plans/`, `docs/plans/`, `plans/`, `.plans/`) that already contains dated plan files, and check `README.md`, `AGENTS.md`, and any `docs/` index for a documented convention. Record the location that already holds the most plans, or the one the docs declare canonical.
+2. Compare the discovered location against the canonical `documents/plans/` path referenced by the `planner-codex`, `planner-discovery-codex`, `implement`, and `docs-codex` agents/skills.
+3. If they differ (plans already live somewhere else), STOP and ask the user - via a dropdown prompt (multiple choice) - whether to wire the agents to the existing location, keep the canonical `documents/plans/`, or use a different path they specify. Never rewrite the location without explicit user confirmation.
+4. On confirmation, update every reference to the plans directory so the agents write to and read from the correct place: the `planner-codex` and `planner-discovery-codex` agents, the `planner` and `implement` skills, and the `docs-codex` agent's plan-document references. Leave all other paths untouched.
+5. Report the resolved plans location and the list of edited files.
+
 ## Guardrails
-- Never commit or push - you edit agent files and MCP config; the user commits.
+- Never commit or push - you edit agent and skill files and MCP config; the user commits.
 - Never install an MCP server that policy blocks or that the user has not approved.
 - Never let an MCP server perform mutating operations against shared or production environments; the infra guardrails still apply.
-- Only edit files under `.codex/agents/` and the tool's MCP config. Do not modify source code.
-- Idempotent: re-running makes no changes when servers are already wired and every configured model is available.
+- Never change the plans location without explicit user confirmation.
+- Only edit files under `.codex/agents/`, `.agents/skills/`, and the tool's MCP config. Do not modify source code.
+- Idempotent: re-running makes no changes when servers are already wired, the plans location already matches, and every configured model is available.
 ```
 
 ---

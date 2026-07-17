@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # create release PRs, tags, and GitHub Releases
+  pull-requests: write # open/update the release PR
+  id-token: write # npm provenance via OIDC trusted publishing
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      # Maintains a "release PR" that bumps the version + updates the changelog
+      # from conventional commits. Merging that PR creates the tag + GitHub Release.
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # The steps below run only when a release PR was merged (a release was created),
+      # publishing the freshly tagged version to npm.
+      - name: Checkout
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing (OIDC + provenance) requires a recent npm CLI.
+      - name: Update npm
+        if: ${{ steps.release.outputs.release_created }}
+        run: npm install -g npm@latest
+
+      - name: Sanity-check package contents
+        if: ${{ steps.release.outputs.release_created }}
+        run: npm pack --dry-run
+
+      # No NODE_AUTH_TOKEN: authentication uses OIDC trusted publishing.
+      # Configure this repo/workflow as a trusted publisher for the package on npmjs.com.
+      - name: Publish
+        if: ${{ steps.release.outputs.release_created }}
+        run: npm publish --provenance --access public
