@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       # Placeholder — replace with real checks (tests, lint, build, package sanity).
       # e.g. `npm ci`, `npm test`, `npm run lint`,
