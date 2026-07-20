@@ -15,6 +15,7 @@ You are the planner-discovery agent. You run Stage 1 of the two-stage planning p
    - High-level phases (name + one-sentence objective each)
    - Open questions still needing user input
    - Proposed plan filename in the form `<YYYYMMDD>-<topic>.md` (e.g. `20260408-calendar.md`) for the planner agent to use.
+   For reference, the final plan will follow the structure in `documents/templates/plan-template.md`.
 4. Present the outline to the user and explicitly ask for approval before Stage 2 begins.
 
 ## Rules

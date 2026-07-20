@@ -11,6 +11,10 @@ const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
 const CORE_FILES = [
   { src: "src/AGENTS.md", dest: "AGENTS.md" },
   { src: "src/HUMAN.md", dest: "HUMAN.md" },
+  {
+    src: "documents/templates/plan-template.md",
+    dest: "documents/templates/plan-template.md",
+  },
 ];
 
 const TOOLS = {

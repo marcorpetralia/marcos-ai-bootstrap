@@ -22,9 +22,11 @@ npx marcos-ai-bootstrap --claude --codex # combine any subset
 npx marcos-ai-bootstrap --all            # every tool at once
 ```
 
-Run it from the root of the repository you want to bootstrap. It writes `AGENTS.md`
-and `HUMAN.md` (the tool-agnostic rules + human guide) alongside
-the agent/skill files for whichever tool(s) you selected:
+Run it from the root of the repository you want to bootstrap. It writes three always-present
+core files—`AGENTS.md`, `HUMAN.md` (the tool-agnostic rules + human guide), and
+`documents/templates/plan-template.md` (an empty scaffold for future implementation plans)—alongside
+the agent/skill files for whichever tool(s) you selected. The Stage-2 planner agents
+(planner-copilot, planner-claude, planner-codex) read the plan template before writing plans.
 
 | Flag | Writes |
 |---|---|
@@ -60,6 +62,10 @@ marcos-ai-bootstrap --all
 - `AGENTS.md`, `HUMAN.md` (repo root) — this repository's **own self-hosting** copies, used
   by the agent network running against this repo. Kept separate from the shipped `src/` copies
   and not published to npm.
+- `documents/templates/plan-template.md` — the **canonical, shipped** plan template that is
+  also this repository's **own self-hosted copy** (source path == dest path). Published to npm
+  and bundled with the `marcos-ai-bootstrap` CLI; Stage-2 planner agents read this template
+  before writing plans to ensure consistent structure.
 - `.claude/`, `.codex/`, `.github/`, `.agents/` — the already-materialised, checked-in
   agent/skill files for this repo itself, and the templates the `marcos-ai-bootstrap` CLI ships
   and copies into other repositories.

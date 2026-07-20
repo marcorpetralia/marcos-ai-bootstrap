@@ -11,6 +11,7 @@
     "src/lib",
     "src/AGENTS.md",
     "src/HUMAN.md",
+    "documents/templates",
     ".claude",
     ".codex",
     ".agents",
