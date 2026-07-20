@@ -6,76 +6,7 @@ This file contains tool-specific instructions for materialising the canonical ag
 
 ## MCP Servers
 
-MCP servers give the infra and planner agents authoritative, live access to the platforms a project actually uses. Rather than hardcoding a fixed list, the bootstrap **discovers** which servers are applicable to the current repository and **respects organization policy** on what may be installed. At the start of every session, after materialising the agent network, run the discovery → policy-check → install/verify flow below.
-
-### Step 1 — Discover applicable servers
-
-Infer the project's platform footprint before installing anything. Inspect, in order:
-
-1. **Repository docs** — root `README.md`, service-level `README.md` files, `CLAUDE.md` / `AGENTS.md`, `docs/`, and `documents/plans/`. Look for named platforms and tooling (e.g. Azure, Cloudflare, AWS, GCP, GitHub, PostgreSQL, Stripe, Sentry).
-2. **IAC and config** — `*.bicep`, `*.tf`, `wrangler.toml`, `docker-compose*.yml`, pipeline YAML under `.github/workflows/` or `.azure/`, and environment-variable tables. These reveal the deploy targets an infra agent will touch.
-3. **Dependency manifests** — `package.json`, provider SDKs, and CLIs already vendored in the repo.
-
-Map the footprint to candidate MCP servers. Common mappings (extend as the ecosystem grows):
-
-| Signal in repo | Candidate MCP server | Package / endpoint |
-|---|---|---|
-| Azure services, Bicep, `az`, `DefaultAzureCredential` | `azure` | `npx -y @azure/mcp@latest server start` |
-| Azure/Microsoft docs reference need | `microsoft-learn` (read-only docs) | hosted — `https://learn.microsoft.com/api/mcp` |
-| Cloudflare Workers, `wrangler.toml`, DNS/edge | `cloudflare` | `npx -y mcp-remote https://docs.mcp.cloudflare.com/sse` (docs); other Cloudflare servers use `https://<name>.mcp.cloudflare.com/sse` |
-| GitHub-centric workflows / PR automation | `github` | `npx -y @modelcontextprotocol/server-github` |
-
-If the repo shows no clear signal for a platform, **do not install its server** — surface it as a suggestion to the user instead of adding it silently.
-
-### Step 2 — Check organization policy
-
-Before installing any discovered server, confirm it is permitted. Check, in order, and honour the most restrictive:
-
-1. **Repo-scoped allowlist** — an `mcp-allowlist` / `mcp-policy` entry in `AGENTS.md`, a `.mcp-policy.json` / `.mcp-allowed.json` file at the repo root, or an `mcp` section in the tool's project config.
-2. **Tool/user-scoped policy** — the tool's own managed-settings or enterprise policy (e.g. Claude Code managed settings, Copilot org policy, Codex config). If a tool exposes an allowed/blocked MCP list, treat it as authoritative.
-3. **Explicit user confirmation** — if no policy source exists, list the servers you intend to install and ask the user to confirm before adding any that require network access or credentials.
-
-Never install a server that policy blocks. If a needed server is blocked, note the limitation to the user and continue without it.
-
-### Step 3 — Which agents use them
-
-- **infra agents** (`infra-claude`, `infra-copilot`, `infra-codex`) — use the discovered, policy-approved servers matching the platform a task touches (e.g. `azure` for Bicep, `cloudflare` for Workers/DNS), alongside any read-only docs server for reference material.
-- **planner agents** (`planner-claude`, `planner-copilot`, `planner-codex`) — check which approved servers are relevant to the plan, query them, and fold the findings into the plan.
-
-### Step 4 — Verify and install per tool
-
-Install only servers that passed Steps 1–2. Substitute the discovered server name/package for the `<name>` / `<package>` placeholders.
-
-**Claude Code** — check with `claude mcp list`, then:
-
-```powershell
-claude mcp add <name> -- <command...>
-# e.g. claude mcp add azure -- npx -y @azure/mcp@latest server start
-```
-
-**GitHub Copilot CLI** — configure in `~/.copilot/mcp-config.json` (or project-scoped equivalent), verify with `/mcp`:
-
-```json
-{
-  "mcpServers": {
-    "<name>": { "command": "npx", "args": ["-y", "<package>", "..."] }
-  }
-}
-```
-
-**Codex** — configure in `~/.codex/config.toml` (or project-scoped `.codex`), verify with `codex mcp list`:
-
-```toml
-[mcp_servers.<name>]
-command = "npx"
-args = ["-y", "<package>", "..."]
-```
-
-### Notes
-
-- The Azure MCP server authenticates with your existing Azure credential chain (Azure CLI login / managed identity / `DefaultAzureCredential`). Ensure you are signed in before relying on it.
-- Cloudflare remote servers prompt for OAuth authorization on first connect via `mcp-remote`.
-- Never let an MCP server perform manual mutating operations against shared or production environments — the infra guardrails (all changes go through IAC and pipelines) still apply. Use these servers for reference, inspection, and planning.
+The MCP server discovery → policy-check → install/verify flow is defined in the **MCP Servers** section of `AGENTS.md` (the canonical, shipped source of truth). Per-tool install/verify commands are covered there for Claude Code, GitHub Copilot CLI, and Codex. The infra, planner, and initialize agents/skills below reference that section directly.
 
 ---
 
@@ -138,7 +69,7 @@ You are the planner. You run Stage 2 of the two-stage planning process.
 
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
-Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section for the discovery and policy-check flow.
+Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
 
 ## File naming
 - Name the plan file `<YYYYMMDD>-<topic>.md` using today's date with no separators in the date, e.g. `20260408-calendar.md`.
@@ -227,7 +158,7 @@ You are the infra agent. You modify infrastructure as code only.
 - Never commit to main. Always work on the branch specified in the task.
 - Never run manual CLI commands (az, aws, gcloud, kubectl) against shared or production environments.
 - All changes must be made in IAC files and applied through the deployment pipeline.
-- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section for the discovery and policy-check flow.
+- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
 - Validate IAC (e.g. az bicep build) before declaring done.
 - Delegate documentation updates to the docs agent.
 - Do not change application code — that belongs to the code agent.
@@ -571,7 +502,7 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 ## Phase 1 — MCP server discovery & wiring
 
-1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `AGENTS-BOOTSTRAP.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
+1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `AGENTS.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
 2. Present the candidate servers to the user. Apply the Step 2 policy check and honour the most restrictive source. Never install a policy-blocked server. Install only servers the user explicitly confirms.
 3. Install each approved server with `claude mcp add <name> -- <command...>` and verify with `claude mcp list`.
 4. Wire the approved servers into the agents:
@@ -714,7 +645,7 @@ You are the planner-copilot agent. You run Stage 2 of the two-stage planning pro
 
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
-Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section for the discovery and policy-check flow.
+Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
 
 ## File naming
 - Name the plan file `<YYYYMMDD>-<topic>.md` using today's date with no separators in the date, e.g. `20260408-calendar.md`.
@@ -803,7 +734,7 @@ You are the infra-copilot agent. You modify infrastructure as code only.
 - Never commit to main. Always work on the branch specified in the task.
 - Never run manual CLI commands (az, aws, gcloud, kubectl) against shared or production environments.
 - All changes must be made in IAC files and applied through the deployment pipeline.
-- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section for the discovery and policy-check flow.
+- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
 - Validate IAC (e.g. az bicep build) before declaring done.
 - Delegate documentation updates to the docs-copilot agent.
 - Do not change application code — that belongs to the code-copilot agent.
@@ -1141,7 +1072,7 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 ## Phase 1 — MCP server discovery & wiring
 
-1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `AGENTS-BOOTSTRAP.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
+1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `AGENTS.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
 2. Present the candidate servers to the user. Apply the Step 2 policy check and honour the most restrictive source. Never install a policy-blocked server. Install only servers the user explicitly confirms.
 3. Configure each approved server in `~/.copilot/mcp-config.json` (or the project-scoped equivalent) under `mcpServers`, then verify with `/mcp`.
 4. Wire the approved servers into the agents:
@@ -1281,7 +1212,7 @@ You are the planner. You run Stage 2 of the two-stage planning process.
 
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
-Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section for the discovery and policy-check flow.
+Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
 
 ## File naming
 - Name the plan file `<YYYYMMDD>-<topic>.md` using today's date with no separators in the date, e.g. `20260408-calendar.md`.
@@ -1373,7 +1304,7 @@ You are the infra agent. You modify infrastructure as code only.
 - Never commit to main. Always work on the branch specified in the task.
 - Never run manual CLI commands (az, aws, gcloud, kubectl) against shared or production environments.
 - All changes must be made in IAC files and applied through the deployment pipeline.
-- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section for the discovery and policy-check flow.
+- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
 - Validate IAC (e.g. az bicep build) before declaring done.
 - Delegate documentation updates to the docs agent.
 - Do not change application code — that belongs to the code agent.
@@ -1726,7 +1657,7 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 ## Phase 1 - MCP server discovery & wiring
 
-1. Run the discovery -> policy-check -> install/verify flow from the "MCP Servers" section of `AGENTS-BOOTSTRAP.md` (Steps 1-4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
+1. Run the discovery -> policy-check -> install/verify flow from the "MCP Servers" section of `AGENTS.md` (Steps 1-4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
 2. Present the candidate servers to the user. Apply the Step 2 policy check and honour the most restrictive source. Never install a policy-blocked server. Install only servers the user explicitly confirms.
 3. Configure each approved server in `~/.codex/config.toml` (or the project-scoped `.codex`) under `[mcp_servers.<name>]`, then verify with `codex mcp list`.
 4. Wire the approved servers into the agents:

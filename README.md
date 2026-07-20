@@ -65,10 +65,11 @@ marcos-ai-bootstrap --all
   and copies into other repositories.
 - `src/bin/ai-bootstrap.js`, `src/lib/materialize.js` — the CLI implementation.
 - `src/AGENTS-BOOTSTRAP.md` — maintainer-only source of truth for each tool's
-  materialised agent/skill prompt bodies, model tier mappings, and MCP server
-  discovery/policy flow. **Not published to npm and not copied into target repos** —
-  the materialised agent/skill files under `.claude/`, `.codex/`, `.github/`, `.agents/`
-  are the shipped source of truth.
+  materialised agent/skill prompt bodies and model tier mappings. The MCP server
+  discovery/policy flow now lives in the **MCP Servers** section of `AGENTS.md` (which
+  is shipped); this file references it. **Not published to npm and not copied into target
+  repos** — the materialised agent/skill files under `.claude/`, `.codex/`, `.github/`,
+  `.agents/` are the shipped source of truth.
 - `src/extract-agents.py` — maintainer tool: regenerates the `.claude/`, `.codex/`,
   `.github/`, `.agents/` template files at the repo root from `src/AGENTS-BOOTSTRAP.md`
   after editing it. Run this after changing `src/AGENTS-BOOTSTRAP.md`, then commit the

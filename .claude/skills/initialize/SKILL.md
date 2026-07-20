@@ -7,7 +7,7 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 ## Phase 1 — MCP server discovery & wiring
 
-1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `AGENTS-BOOTSTRAP.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
+1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `AGENTS.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
 2. Present the candidate servers to the user. Apply the Step 2 policy check and honour the most restrictive source. Never install a policy-blocked server. Install only servers the user explicitly confirms.
 3. Install each approved server with `claude mcp add <name> -- <command...>` and verify with `claude mcp list`.
 4. Wire the approved servers into the agents:

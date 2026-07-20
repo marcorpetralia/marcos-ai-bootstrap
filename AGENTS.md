@@ -2,7 +2,7 @@
 
 This file is tool-agnostic. Drop it into any repository and reference it from your AI tool's config entry-point (e.g. `CLAUDE.md` via `@AGENTS.md`, `.github/copilot-instructions.md`, `.opencode/instructions.md`) to immediately apply these rules and bootstrap the agent network.
 
-For tool-specific agent materialisation instructions (file templates, model IDs, config paths), see `AGENTS-BOOTSTRAP.md`.
+The agent and skill files for your specific tool are materialised into the repository by the `marcos-ai-bootstrap` CLI (under `.claude/`, `.codex/`, `.github/`, or `.agents/`). This file is the tool-agnostic source of truth for the rules, the MCP server flow, and the canonical agent/skill roles.
 
 ---
 
@@ -11,8 +11,83 @@ For tool-specific agent materialisation instructions (file templates, model IDs,
 At the start of every session:
 1. Confirm this file has been read.
 2. Identify which tool you are running under.
-3. Follow the bootstrap instructions in `AGENTS-BOOTSTRAP.md` for that tool to verify the agent network **and the skill network** are fully materialised. Create any missing agents or skills before starting any other work.
-4. Discover, policy-check, and configure the applicable **MCP servers** as described in the MCP Servers section of `AGENTS-BOOTSTRAP.md`. Use MCP servers wherever applicable — prefer them for authoritative, live platform access (e.g. Azure, Cloudflare) over guessing or stale knowledge, subject to organization policy.
+3. Verify the agent network **and the skill network** for that tool are present — the materialised agent/skill files under `.claude/`, `.codex/`, `.github/`, or `.agents/`. If any are missing, re-run the `marcos-ai-bootstrap` CLI for your tool to restore them before starting any other work.
+4. Discover, policy-check, and configure the applicable **MCP servers** as described in the [MCP Servers](#mcp-servers) section below. Use MCP servers wherever applicable — prefer them for authoritative, live platform access (e.g. Azure, Cloudflare) over guessing or stale knowledge, subject to organization policy.
+
+---
+
+## MCP Servers
+
+MCP servers give the infra and planner agents authoritative, live access to the platforms a project actually uses. Rather than hardcoding a fixed list, the bootstrap **discovers** which servers are applicable to the current repository and **respects organization policy** on what may be installed. At the start of every session, after confirming the agent network is present, run the discovery → policy-check → install/verify flow below.
+
+### Step 1 — Discover applicable servers
+
+Infer the project's platform footprint before installing anything. Inspect, in order:
+
+1. **Repository docs** — root `README.md`, service-level `README.md` files, `CLAUDE.md` / `AGENTS.md`, `docs/`, and `documents/plans/`. Look for named platforms and tooling (e.g. Azure, Cloudflare, AWS, GCP, GitHub, PostgreSQL, Stripe, Sentry).
+2. **IAC and config** — `*.bicep`, `*.tf`, `wrangler.toml`, `docker-compose*.yml`, pipeline YAML under `.github/workflows/` or `.azure/`, and environment-variable tables. These reveal the deploy targets an infra agent will touch.
+3. **Dependency manifests** — `package.json`, provider SDKs, and CLIs already vendored in the repo.
+
+Map the footprint to candidate MCP servers. Common mappings (extend as the ecosystem grows):
+
+| Signal in repo | Candidate MCP server | Package / endpoint |
+|---|---|---|
+| Azure services, Bicep, `az`, `DefaultAzureCredential` | `azure` | `npx -y @azure/mcp@latest server start` |
+| Azure/Microsoft docs reference need | `microsoft-learn` (read-only docs) | hosted — `https://learn.microsoft.com/api/mcp` |
+| Cloudflare Workers, `wrangler.toml`, DNS/edge | `cloudflare` | `npx -y mcp-remote https://docs.mcp.cloudflare.com/sse` (docs); other Cloudflare servers use `https://<name>.mcp.cloudflare.com/sse` |
+| GitHub-centric workflows / PR automation | `github` | `npx -y @modelcontextprotocol/server-github` |
+
+If the repo shows no clear signal for a platform, **do not install its server** — surface it as a suggestion to the user instead of adding it silently.
+
+### Step 2 — Check organization policy
+
+Before installing any discovered server, confirm it is permitted. Check, in order, and honour the most restrictive:
+
+1. **Repo-scoped allowlist** — an `mcp-allowlist` / `mcp-policy` entry in `AGENTS.md`, a `.mcp-policy.json` / `.mcp-allowed.json` file at the repo root, or an `mcp` section in the tool's project config.
+2. **Tool/user-scoped policy** — the tool's own managed-settings or enterprise policy (e.g. Claude Code managed settings, Copilot org policy, Codex config). If a tool exposes an allowed/blocked MCP list, treat it as authoritative.
+3. **Explicit user confirmation** — if no policy source exists, list the servers you intend to install and ask the user to confirm before adding any that require network access or credentials.
+
+Never install a server that policy blocks. If a needed server is blocked, note the limitation to the user and continue without it.
+
+### Step 3 — Which agents use them
+
+- **infra agents** (`infra-claude`, `infra-copilot`, `infra-codex`) — use the discovered, policy-approved servers matching the platform a task touches (e.g. `azure` for Bicep, `cloudflare` for Workers/DNS), alongside any read-only docs server for reference material.
+- **planner agents** (`planner-claude`, `planner-copilot`, `planner-codex`) — check which approved servers are relevant to the plan, query them, and fold the findings into the plan.
+
+### Step 4 — Verify and install per tool
+
+Install only servers that passed Steps 1–2. Substitute the discovered server name/package for the `<name>` / `<package>` placeholders.
+
+**Claude Code** — check with `claude mcp list`, then:
+
+```powershell
+claude mcp add <name> -- <command...>
+# e.g. claude mcp add azure -- npx -y @azure/mcp@latest server start
+```
+
+**GitHub Copilot CLI** — configure in `~/.copilot/mcp-config.json` (or project-scoped equivalent), verify with `/mcp`:
+
+```json
+{
+  "mcpServers": {
+    "<name>": { "command": "npx", "args": ["-y", "<package>", "..."] }
+  }
+}
+```
+
+**Codex** — configure in `~/.codex/config.toml` (or project-scoped `.codex`), verify with `codex mcp list`:
+
+```toml
+[mcp_servers.<name>]
+command = "npx"
+args = ["-y", "<package>", "..."]
+```
+
+### Notes
+
+- The Azure MCP server authenticates with your existing Azure credential chain (Azure CLI login / managed identity / `DefaultAzureCredential`). Ensure you are signed in before relying on it.
+- Cloudflare remote servers prompt for OAuth authorization on first connect via `mcp-remote`.
+- Never let an MCP server perform manual mutating operations against shared or production environments — the infra guardrails (all changes go through IAC and pipelines) still apply. Use these servers for reference, inspection, and planning.
 
 ---
 
@@ -29,7 +104,7 @@ At the start of every session:
 
 ## Skills
 
-Skills are reusable, user-invocable orchestration workflows (slash commands) that drive the agent network. They are tool-specific in how they are materialised — see `AGENTS-BOOTSTRAP.md` for file templates, paths, and discovery rules for your tool.
+Skills are reusable, user-invocable orchestration workflows (slash commands) that drive the agent network. The `marcos-ai-bootstrap` CLI materialises them for your tool (e.g. `.claude/skills/`, `.github/skills/`, `.agents/skills/`).
 
 Canonical skills:
 
@@ -97,7 +172,7 @@ Canonical skills:
 
 ## Agent Network
 
-These are the canonical agent roles. They are defined here without tool-specific syntax. See `AGENTS-BOOTSTRAP.md` for how to materialise them in your specific tool.
+These are the canonical agent roles. They are defined here without tool-specific syntax. The `marcos-ai-bootstrap` CLI materialises them for your specific tool.
 
 Model tiers used below:
 - **High** — most capable; use for planning and complex cross-file reasoning (e.g. Opus-class)
