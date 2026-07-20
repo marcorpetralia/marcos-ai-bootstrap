@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.2...marcos-ai-bootstrap-v0.1.3) (2026-07-20)
+
+
+### Bug Fixes
+
+* remove reference to agents-bootstrap ([6f4720d](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/6f4720d432a68056f16435519c2bd38ea9a6835b))
+* remove reference to agents-bootstrap ([3e9a1a1](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/3e9a1a167999588979ecf20ec52f24b2f816c715))
+
 ## [0.1.2](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.1...marcos-ai-bootstrap-v0.1.2) (2026-07-18)
 
 
