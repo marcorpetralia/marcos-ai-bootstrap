@@ -29,9 +29,11 @@ import sys
 
 DEFAULT_SOURCE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "AGENTS-BOOTSTRAP.md")
 
-# Materialised template files are written to the repository root (the parent of the
-# src/ directory that holds this script), not next to the source-of-truth document.
-OUTPUT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Materialised template files are written into the src/ directory that holds this
+# script — src/ is the single shipped source of truth the CLI reads from. The
+# path headings in AGENTS-BOOTSTRAP.md stay repo-root-relative (e.g.
+# .github/agents/foo) and are rooted under src/ here (-> src/.github/agents/foo).
+OUTPUT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 PATTERN = re.compile(
     r"^### `(?P<path>[^`]+)`\n(?P<fence>`{3,})[a-zA-Z]*\n(?P<body>.*?)\n(?P=fence)$",

@@ -11,12 +11,12 @@
     "src/lib",
     "src/AGENTS.md",
     "src/HUMAN.md",
-    "documents/templates",
-    ".claude",
-    ".codex",
-    ".agents",
-    ".github/agents",
-    ".github/skills"
+    "src/documents/templates",
+    "src/.claude",
+    "src/.codex",
+    "src/.agents",
+    "src/.github/agents",
+    "src/.github/skills"
   ],
   "engines": {
     "node": ">=16"

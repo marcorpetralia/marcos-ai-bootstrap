@@ -45,6 +45,7 @@ You are the planner-discovery agent. You run Stage 1 of the two-stage planning p
    - High-level phases (name + one-sentence objective each)
    - Open questions still needing user input
    - Proposed plan filename in the form `<YYYYMMDD>-<topic>.md` (e.g. `20260408-calendar.md`) for the planner agent to use.
+   For reference, the final plan will follow the structure in `documents/templates/plan-template.md`.
 4. Present the outline to the user and explicitly ask for approval before Stage 2 begins.
 
 ## Rules
@@ -70,6 +71,12 @@ You are the planner. You run Stage 2 of the two-stage planning process.
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
 Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+
+## Plan template
+Before drafting, read `documents/templates/plan-template.md` and follow its
+section structure exactly (title, metadata block, Goal, Constraints +
+Cross-references, Phases, Open questions, Risks). If the template is missing
+from the target repo, fall back to the "Plan structure" section below.
 
 ## File naming
 - Name the plan file `<YYYYMMDD>-<topic>.md` using today's date with no separators in the date, e.g. `20260408-calendar.md`.
@@ -621,6 +628,7 @@ You are the planner-discovery-copilot agent. You run Stage 1 of the two-stage pl
    - High-level phases (name + one-sentence objective each)
    - Open questions still needing user input
    - Proposed plan filename in the form `<YYYYMMDD>-<topic>.md` (e.g. `20260408-calendar.md`) for the planner-copilot agent to use.
+   For reference, the final plan will follow the structure in `documents/templates/plan-template.md`.
 4. Present the outline to the user and explicitly ask for approval before Stage 2 begins.
 
 ## Rules
@@ -646,6 +654,12 @@ You are the planner-copilot agent. You run Stage 2 of the two-stage planning pro
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
 Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+
+## Plan template
+Before drafting, read `documents/templates/plan-template.md` and follow its
+section structure exactly (title, metadata block, Goal, Constraints +
+Cross-references, Phases, Open questions, Risks). If the template is missing
+from the target repo, fall back to the "Plan structure" section below.
 
 ## File naming
 - Name the plan file `<YYYYMMDD>-<topic>.md` using today's date with no separators in the date, e.g. `20260408-calendar.md`.
@@ -1188,6 +1202,7 @@ You are the planner-discovery agent. You run Stage 1 of the two-stage planning p
    - High-level phases (name + one-sentence objective each)
    - Open questions still needing user input
    - Proposed plan filename in the form `<YYYYMMDD>-<topic>.md` (e.g. `20260408-calendar.md`) for the planner agent to use.
+   For reference, the final plan will follow the structure in `documents/templates/plan-template.md`.
 4. Present the outline to the user and explicitly ask for approval before Stage 2 begins.
 
 ## Rules
@@ -1213,6 +1228,12 @@ You are the planner. You run Stage 2 of the two-stage planning process.
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
 Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+
+## Plan template
+Before drafting, read `documents/templates/plan-template.md` and follow its
+section structure exactly (title, metadata block, Goal, Constraints +
+Cross-references, Phases, Open questions, Risks). If the template is missing
+from the target repo, fall back to the "Plan structure" section below.
 
 ## File naming
 - Name the plan file `<YYYYMMDD>-<topic>.md` using today's date with no separators in the date, e.g. `20260408-calendar.md`.

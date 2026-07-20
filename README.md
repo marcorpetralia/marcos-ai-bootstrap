@@ -57,37 +57,30 @@ marcos-ai-bootstrap --all
 
 ## Repository layout
 
-- `src/AGENTS.md`, `src/HUMAN.md` — the **canonical, shipped** copies. These are the source
-  of truth the CLI reads and writes into target repos (as root-level `AGENTS.md`/`HUMAN.md`).
-- `AGENTS.md`, `HUMAN.md` (repo root) — this repository's **own self-hosting** copies, used
-  by the agent network running against this repo. Kept separate from the shipped `src/` copies
-  and not published to npm.
-- `documents/templates/plan-template.md` — the **canonical, shipped** plan template that is
-  also this repository's **own self-hosted copy** (source path == dest path). Published to npm
-  and bundled with the `marcos-ai-bootstrap` CLI; Stage-2 planner agents read this template
-  before writing plans to ensure consistent structure.
-- `.claude/`, `.codex/`, `.github/`, `.agents/` — the already-materialised, checked-in
-  agent/skill files for this repo itself, and the templates the `marcos-ai-bootstrap` CLI ships
-  and copies into other repositories.
+**Everything the CLI materialises into a target repo is shipped from `src/`; `src/` is the single source of truth.**
+
+**Shipped source of truth files (in `src/`):**
+- `src/AGENTS.md`, `src/HUMAN.md` — canonical agent network and human workflow rules.
+- `src/documents/templates/plan-template.md` — canonical plan template scaffold.
+- `src/.claude/agents/`, `src/.claude/skills/`, `src/.codex/agents/`, `src/.codex/`, `src/.github/agents/`, `src/.github/skills/`, `src/.agents/skills/` — tool agent/skill template files materialised by the CLI.
+
+**Self-hosted copies (repo root) — NOT published to npm:**
+- `AGENTS.md`, `HUMAN.md` (repo root) — this repository's own self-hosted copies, used by the agent network running against this repo.
+- `documents/templates/plan-template.md`, `.claude/`, `.codex/`, `.github/agents/`, `.github/skills/`, `.agents/skills/` — regenerated from `src/` for this repo's own agents (not shipped).
+- `.github/workflows/` — this repo's own CI/CD; not shipped.
+
+**Tooling:**
 - `src/bin/ai-bootstrap.js`, `src/lib/materialize.js` — the CLI implementation.
-- `src/AGENTS-BOOTSTRAP.md` — maintainer-only source of truth for each tool's
-  materialised agent/skill prompt bodies and model tier mappings. The MCP server
-  discovery/policy flow now lives in the **MCP Servers** section of `AGENTS.md` (which
-  is shipped); this file references it. **Not published to npm and not copied into target
-  repos** — the materialised agent/skill files under `.claude/`, `.codex/`, `.github/`,
-  `.agents/` are the shipped source of truth.
-- `src/extract-agents.py` — maintainer tool: regenerates the `.claude/`, `.codex/`,
-  `.github/`, `.agents/` template files at the repo root from `src/AGENTS-BOOTSTRAP.md`
-  after editing it. Run this after changing `src/AGENTS-BOOTSTRAP.md`, then commit the
-  regenerated templates so `marcos-ai-bootstrap` ships the update.
+- `src/AGENTS-BOOTSTRAP.md` — maintainer-only source of truth for each tool's materialised agent/skill prompt bodies and model tier mappings. References the MCP server discovery flow from the shipped `AGENTS.md`. Not published to npm.
+- `src/extract-agents.py` — maintainer tool: regenerates the shipped agent/skill template files under `src/.claude/`, `src/.codex/`, `src/.github/agents/`, `src/.github/skills/`, `src/.agents/skills/` from `src/AGENTS-BOOTSTRAP.md` after editing. Run this after changing `src/AGENTS-BOOTSTRAP.md`.
 
 ## Maintaining this repo
 
 1. Edit `src/AGENTS-BOOTSTRAP.md` (the source of truth for agent/skill prompt bodies).
-2. Run `python src/extract-agents.py` to regenerate the materialised template files.
-3. Run `node src/bin/ai-bootstrap.js --all --dry-run --dest <scratch-dir>` to sanity-check
-   the CLI still packages everything correctly.
-4. Commit the changes.
+2. Run `python src/extract-agents.py` to regenerate the shipped agent/skill templates under `src/.claude/`, `src/.codex/`, `src/.github/agents/`, `src/.github/skills/`, `src/.agents/skills/`.
+3. Run `node src/bin/ai-bootstrap.js --all --force --dest .` to regenerate this repo's root self-hosted copies from `src/`.
+4. Run `node src/bin/ai-bootstrap.js --all --dry-run --dest <scratch-dir>` to sanity-check the CLI packages everything correctly.
+5. Commit the changes.
 
 ## Releasing to npm
 
