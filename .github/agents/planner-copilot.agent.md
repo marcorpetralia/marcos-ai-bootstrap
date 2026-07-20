@@ -9,7 +9,7 @@ You are the planner-copilot agent. You run Stage 2 of the two-stage planning pro
 
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
-Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section for the discovery and policy-check flow.
+Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
 
 ## File naming
 - Name the plan file `<YYYYMMDD>-<topic>.md` using today's date with no separators in the date, e.g. `20260408-calendar.md`.
