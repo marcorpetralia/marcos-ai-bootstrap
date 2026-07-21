@@ -5,12 +5,25 @@ const path = require("path");
 
 const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
 
-// Canonical, shipped source-of-truth core files live under src/ so they stay
-// separate from this repo's own self-hosting AGENTS.md/HUMAN.md at the root.
-// Each entry maps the package-relative source to the target-relative destination.
+// Everything the CLI materialises into a target repo ships from a single
+// source-of-truth directory: src/. The destination path is the source path with
+// the leading "src/" stripped (e.g. src/AGENTS.md -> AGENTS.md, src/.github/
+// agents/foo -> .github/agents/foo). This repo's own root-level self-hosting
+// copies (AGENTS.md, .claude/, .github/agents, ...) are generated from these
+// src/ sources and are not themselves published to npm.
+const SRC_DIR = "src";
+
+const toPosix = (p) => p.split(path.sep).join("/");
+
+// Canonical, shipped source-of-truth core files. Each entry maps the
+// package-relative source (under src/) to the target-relative destination.
 const CORE_FILES = [
   { src: "src/AGENTS.md", dest: "AGENTS.md" },
   { src: "src/HUMAN.md", dest: "HUMAN.md" },
+  {
+    src: "src/documents/templates/plan-template.md",
+    dest: "documents/templates/plan-template.md",
+  },
 ];
 
 const TOOLS = {
@@ -123,10 +136,14 @@ function materialize(tools, opts = {}) {
     const tool = TOOLS[toolName];
     if (!tool) continue;
     for (const dir of tool.dirs) {
-      const files = listFiles(path.join(PACKAGE_ROOT, dir));
+      // Sources live under src/<dir>; the destination drops the src/ prefix.
+      const srcDir = path.join(PACKAGE_ROOT, SRC_DIR, dir);
+      const files = listFiles(srcDir);
       for (const abs of files) {
-        const relPath = path.relative(PACKAGE_ROOT, abs);
-        results.push(copyOne(relPath, relPath, destRoot, { force, dryRun }));
+        const rel = toPosix(path.relative(srcDir, abs));
+        const srcRel = path.posix.join(SRC_DIR, toPosix(dir), rel);
+        const destRel = path.posix.join(toPosix(dir), rel);
+        results.push(copyOne(srcRel, destRel, destRoot, { force, dryRun }));
       }
     }
     if (tool.entry) {
