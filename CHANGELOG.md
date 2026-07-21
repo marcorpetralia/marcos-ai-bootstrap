@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.3...marcos-ai-bootstrap-v0.1.4) (2026-07-21)
+
+
+### Features
+
+* ship plan-template as always-written core file and wire planner agents ([298cc3b](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/298cc3b784a592584db421a17589af20cee07d0e))
+* ship plan-template core file and wire planner agents ([9431f07](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/9431f07772e40acb41c697b3fb282a456a961a7a))
+
 ## [0.1.3](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.2...marcos-ai-bootstrap-v0.1.3) (2026-07-20)
 
 
