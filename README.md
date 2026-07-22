@@ -23,16 +23,18 @@ npx marcos-ai-bootstrap --all            # every tool at once
 ```
 
 Run it from the root of the repository you want to bootstrap. It writes three always-present
-core files—`AGENTS.md`, `HUMAN.md` (the tool-agnostic rules + human guide), and
+core files—`MARCOS-AI-BOOTSTRAP.md`, `HUMAN.md` (the full tool-agnostic rules + human guide), and
 `documents/templates/plan-template.md` (an empty scaffold for future implementation plans)—alongside
-the agent/skill files for whichever tool(s) you selected. The Stage-2 planner agents
+the agent/skill files for whichever tool(s) you selected, and appends an `@MARCOS-AI-BOOTSTRAP.md`
+include to your tool's instruction file (creating it only if absent, never overwriting existing content).
+The Stage-2 planner agents
 (planner-copilot, planner-claude, planner-codex) read the plan template before writing plans.
 
 | Flag | Writes |
 |---|---|
-| `--claude` | `.claude/agents/*.md`, `.claude/skills/**/SKILL.md`, `CLAUDE.md` (`@AGENTS.md` stub) |
-| `--codex` | `.codex/agents/*.toml`, `.agents/skills/**/SKILL.md` |
-| `--copilot` | `.github/agents/*.agent.md`, `.github/skills/**/SKILL.md`, `.github/copilot-instructions.md` |
+| `--claude` | `.claude/agents/*.md`, `.claude/skills/**/SKILL.md`, `CLAUDE.md` (append `@MARCOS-AI-BOOTSTRAP.md` include) |
+| `--codex` | `.codex/agents/*.toml`, `.agents/skills/**/SKILL.md`, `AGENTS.md` (append `@MARCOS-AI-BOOTSTRAP.md` include) |
+| `--copilot` | `.github/agents/*.agent.md`, `.github/skills/**/SKILL.md`, `.github/copilot-instructions.md` (append `@../MARCOS-AI-BOOTSTRAP.md` include) |
 | `--all` | all of the above |
 
 ### Options
@@ -60,27 +62,26 @@ marcos-ai-bootstrap --all
 **Everything the CLI materialises into a target repo is shipped from `src/`; `src/` is the single source of truth.**
 
 **Shipped source of truth files (in `src/`):**
-- `src/AGENTS.md`, `src/HUMAN.md` — canonical agent network and human workflow rules.
+- `src/MARCOS-AI-BOOTSTRAP.md`, `src/HUMAN.md` — canonical agent network and human workflow rules.
 - `src/documents/templates/plan-template.md` — canonical plan template scaffold.
 - `src/.claude/agents/`, `src/.claude/skills/`, `src/.codex/agents/`, `src/.codex/`, `src/.github/agents/`, `src/.github/skills/`, `src/.agents/skills/` — tool agent/skill template files materialised by the CLI.
 
 **Self-hosted copies (repo root) — NOT published to npm:**
-- `AGENTS.md`, `HUMAN.md` (repo root) — this repository's own self-hosted copies, used by the agent network running against this repo.
+- `MARCOS-AI-BOOTSTRAP.md`, `HUMAN.md` (repo root) — this repository's own self-hosted rules copies, used by the agent network running against this repo. The root `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` are thin entry-points that `@`-include `MARCOS-AI-BOOTSTRAP.md`.
 - `documents/templates/plan-template.md`, `.claude/`, `.codex/`, `.github/agents/`, `.github/skills/`, `.agents/skills/` — regenerated from `src/` for this repo's own agents (not shipped).
 - `.github/workflows/` — this repo's own CI/CD; not shipped.
 
 **Tooling:**
 - `src/bin/ai-bootstrap.js`, `src/lib/materialize.js` — the CLI implementation.
-- `src/AGENTS-BOOTSTRAP.md` — maintainer-only source of truth for each tool's materialised agent/skill prompt bodies and model tier mappings. References the MCP server discovery flow from the shipped `AGENTS.md`. Not published to npm.
-- `src/extract-agents.py` — maintainer tool: regenerates the shipped agent/skill template files under `src/.claude/`, `src/.codex/`, `src/.github/agents/`, `src/.github/skills/`, `src/.agents/skills/` from `src/AGENTS-BOOTSTRAP.md` after editing. Run this after changing `src/AGENTS-BOOTSTRAP.md`.
+- `src/AGENTS-BOOTSTRAP.md` — maintainer-only source of truth for each tool's materialised agent/skill prompt bodies and model tier mappings. References the MCP server discovery flow from the shipped `MARCOS-AI-BOOTSTRAP.md`. Not published to npm.
+- `src/extract-agents.py` — maintainer tool: regenerates the shipped agent/skill template files under `src/.claude/`, `src/.codex/`, `src/.github/agents/`, `src/.github/skills/`, `src/.agents/skills/` from `src/AGENTS-BOOTSTRAP.md`, then syncs this repo's root self-hosted copies from `src/` (unless `--src-only` is passed). Run this after changing `src/AGENTS-BOOTSTRAP.md`.
 
 ## Maintaining this repo
 
 1. Edit `src/AGENTS-BOOTSTRAP.md` (the source of truth for agent/skill prompt bodies).
-2. Run `python src/extract-agents.py` to regenerate the shipped agent/skill templates under `src/.claude/`, `src/.codex/`, `src/.github/agents/`, `src/.github/skills/`, `src/.agents/skills/`.
-3. Run `node src/bin/ai-bootstrap.js --all --force --dest .` to regenerate this repo's root self-hosted copies from `src/`.
-4. Run `node src/bin/ai-bootstrap.js --all --dry-run --dest <scratch-dir>` to sanity-check the CLI packages everything correctly.
-5. Commit the changes.
+2. Run `python src/extract-agents.py` to regenerate the shipped agent/skill templates under `src/.claude/`, `src/.codex/`, `src/.github/agents/`, `src/.github/skills/`, `src/.agents/skills/` **and** sync this repo's root self-hosted copies from `src/` (it invokes the CLI for you). Pass `--src-only` to write `src/` alone.
+3. Run `node src/bin/ai-bootstrap.js --all --dry-run --dest <scratch-dir>` to sanity-check the CLI packages everything correctly.
+4. Commit the changes.
 
 ## Releasing to npm
 

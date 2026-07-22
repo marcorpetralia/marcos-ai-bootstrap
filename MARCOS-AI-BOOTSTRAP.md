@@ -1,6 +1,6 @@
 # Agent Rules
 
-This file is tool-agnostic. Drop it into any repository and reference it from your AI tool's config entry-point (e.g. `CLAUDE.md` via `@AGENTS.md`, `.github/copilot-instructions.md`, `.opencode/instructions.md`) to immediately apply these rules and bootstrap the agent network.
+This file is tool-agnostic and ships as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Reference it from your AI tool's instruction entry-point (e.g. `CLAUDE.md` or `AGENTS.md` via `@MARCOS-AI-BOOTSTRAP.md`, or `.github/copilot-instructions.md` via `@../MARCOS-AI-BOOTSTRAP.md`) so these rules apply without overwriting instructions you already have. The `marcos-ai-bootstrap` CLI and the `initialize` skill append that reference for you (creating the entry-point file if it does not exist).
 
 The agent and skill files for your specific tool are materialised into the repository by the `marcos-ai-bootstrap` CLI (under `.claude/`, `.codex/`, `.github/`, or `.agents/`). This file is the tool-agnostic source of truth for the rules, the MCP server flow, and the canonical agent/skill roles.
 
@@ -127,9 +127,9 @@ Canonical skills:
 **Guardrails:** Never commits or pushes — agents edit files, the user commits. Never works on `main` (uses the plan's branch). Honours each phase's agent designation exactly; stops on a failed phase.
 
 ### initialize
-**Purpose:** One-time environment reconciliation. Discovers applicable MCP servers (via the MCP Servers discovery → policy-check → install flow) and, with user approval, installs and wires them into the `infra` and `planner` agents. Discovers where plan documents actually live in the repo and, after explicit user confirmation, wires the `planner`, `implement`, and `docs` agents/skills to that location. Then verifies every agent's configured model exists in the current tool and, for any missing model, prompts the user to pick the closest available match from a dropdown and rewrites the agent files.
-**Pipeline:** MCP discovery → user approval → install + wire agents → plans-location discovery → user confirmation → rewrite plan-location references → model availability check → user picks replacements → rewrite agent files.
-**Guardrails:** Never commits or pushes. Only edits agent/skill files and MCP config — never source code. Never installs a policy-blocked or unapproved server. Never changes the plans location without explicit user confirmation. Idempotent.
+**Purpose:** One-time environment reconciliation. First ensures the tool's instruction file (`CLAUDE.md`, `AGENTS.md`, or `.github/copilot-instructions.md`) references the shipped `MARCOS-AI-BOOTSTRAP.md` rules — appending a short `@MARCOS-AI-BOOTSTRAP.md` include (never overwriting existing content), or creating the file if it does not exist. Discovers applicable MCP servers (via the MCP Servers discovery → policy-check → install flow) and, with user approval, installs and wires them into the `infra` and `planner` agents. Discovers where plan documents actually live in the repo and, after explicit user confirmation, wires the `planner`, `implement`, and `docs` agents/skills to that location. Then always prompts the user, via a dropdown, to choose the model for each tier/role — pre-selecting the currently configured model when it is available, or the closest available match when it is not — and rewrites the agent files.
+**Pipeline:** rules-file include wiring → MCP discovery → user approval → install + wire agents → plans-location discovery → user confirmation → rewrite plan-location references → enumerate available models → user chooses model per tier/role (always) → rewrite agent files.
+**Guardrails:** Never commits or pushes. Only edits agent/skill files, the tool's instruction entry-point, and MCP config — never source code. Appends to (never clobbers) an existing instruction file. Never installs a policy-blocked or unapproved server. Never changes the plans location without explicit user confirmation. Idempotent for include wiring, MCP wiring, and the plans location; model selection is always offered, but keeping the current choice leaves files unchanged.
 
 ---
 

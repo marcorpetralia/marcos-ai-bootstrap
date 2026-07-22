@@ -7,18 +7,21 @@ const PACKAGE_ROOT = path.resolve(__dirname, "..", "..");
 
 // Everything the CLI materialises into a target repo ships from a single
 // source-of-truth directory: src/. The destination path is the source path with
-// the leading "src/" stripped (e.g. src/AGENTS.md -> AGENTS.md, src/.github/
-// agents/foo -> .github/agents/foo). This repo's own root-level self-hosting
-// copies (AGENTS.md, .claude/, .github/agents, ...) are generated from these
-// src/ sources and are not themselves published to npm.
+// the leading "src/" stripped (e.g. src/MARCOS-AI-BOOTSTRAP.md ->
+// MARCOS-AI-BOOTSTRAP.md, src/.github/agents/foo -> .github/agents/foo). This
+// repo's own root-level self-hosting copies are generated from these src/
+// sources and are not themselves published to npm.
 const SRC_DIR = "src";
 
 const toPosix = (p) => p.split(path.sep).join("/");
 
 // Canonical, shipped source-of-truth core files. Each entry maps the
-// package-relative source (under src/) to the target-relative destination.
+// package-relative source (under src/) to the target-relative destination. The
+// full agent rules ship as MARCOS-AI-BOOTSTRAP.md so they never collide with a
+// user's own AGENTS.md / CLAUDE.md; the tool entry-points below only *reference*
+// this file via an appended @-include.
 const CORE_FILES = [
-  { src: "src/AGENTS.md", dest: "AGENTS.md" },
+  { src: "src/MARCOS-AI-BOOTSTRAP.md", dest: "MARCOS-AI-BOOTSTRAP.md" },
   { src: "src/HUMAN.md", dest: "HUMAN.md" },
   {
     src: "src/documents/templates/plan-template.md",
@@ -26,30 +29,41 @@ const CORE_FILES = [
   },
 ];
 
+// The short block appended to a tool's instruction file. `ref` is the tool-
+// correct @-include path to MARCOS-AI-BOOTSTRAP.md (relative to the entry file).
+function includeBlock(ref) {
+  return (
+    "# Marcos AI-Bootstrap\n\n" +
+    "This repository uses the Marcos AI-Bootstrap agent/skill network. See " +
+    ref +
+    " for the agent rules, the MCP server flow, and the canonical agent/skill roles.\n"
+  );
+}
+
+// Marker used to detect an already-wired instruction file (idempotency).
+const INCLUDE_MARKER = "MARCOS-AI-BOOTSTRAP.md";
+
 const TOOLS = {
   claude: {
     label: "Claude Code",
     dirs: [".claude/agents", ".claude/skills"],
-    entry: {
-      file: "CLAUDE.md",
-      content: "@AGENTS.md\n",
-    },
+    // Claude reads CLAUDE.md; @-imports resolve relative to it (repo root).
+    entry: { file: "CLAUDE.md", include: "@MARCOS-AI-BOOTSTRAP.md" },
   },
   codex: {
     label: "Codex",
     dirs: [".codex/agents", ".agents/skills"],
-    // Codex loads AGENTS.md directly from the workspace root; no separate
-    // config entry-point file is required.
+    // Codex loads AGENTS.md directly from the workspace root.
+    entry: { file: "AGENTS.md", include: "@MARCOS-AI-BOOTSTRAP.md" },
   },
   copilot: {
     label: "GitHub Copilot CLI",
     dirs: [".github/agents", ".github/skills"],
+    // Copilot reads .github/copilot-instructions.md; the rules file sits one
+    // directory up at the repo root.
     entry: {
       file: path.join(".github", "copilot-instructions.md"),
-      content:
-        "# Copilot instructions\n\n" +
-        "See [AGENTS.md](../AGENTS.md) for the agent rules and the agent/skill " +
-        "network that has been materialised into this repository.\n",
+      include: "@../MARCOS-AI-BOOTSTRAP.md",
     },
   },
 };
@@ -73,7 +87,7 @@ function listFiles(dir) {
 
 /**
  * Copy a single file from the package root to the destination root. The source
- * and destination relative paths may differ (e.g. src/AGENTS.md -> AGENTS.md).
+ * and destination relative paths may differ (e.g. src/MARCOS-AI-BOOTSTRAP.md -> MARCOS-AI-BOOTSTRAP.md).
  * Returns a status object keyed by the destination path.
  */
 function copyOne(srcRel, destRel, destRoot, { force, dryRun }) {
@@ -97,20 +111,33 @@ function copyOne(srcRel, destRel, destRoot, { force, dryRun }) {
 }
 
 /**
- * Write a small generated entry-point file (e.g. CLAUDE.md,
- * .github/copilot-instructions.md) rather than copying from the package.
+ * Wire a tool's instruction entry-point (e.g. CLAUDE.md,
+ * .github/copilot-instructions.md, AGENTS.md) to the shipped
+ * MARCOS-AI-BOOTSTRAP.md rules. Never overwrites existing user content: if the
+ * file already references the rules file it is left untouched; otherwise the
+ * include block is appended. The file is created with just the block if absent.
  */
-function writeEntry(entry, destRoot, { force, dryRun }) {
+function appendEntry(entry, destRoot, { dryRun }) {
   const dest = path.join(destRoot, entry.file);
-  const exists = fs.existsSync(dest);
-  if (exists && !force) {
-    return { relPath: entry.file, status: "skipped-exists" };
+  const block = includeBlock(entry.include);
+
+  if (fs.existsSync(dest)) {
+    const current = fs.readFileSync(dest, "utf8");
+    if (current.includes(INCLUDE_MARKER)) {
+      return { relPath: entry.file, status: "already-wired" };
+    }
+    if (!dryRun) {
+      const sep = current.length === 0 || current.endsWith("\n") ? "\n" : "\n\n";
+      fs.appendFileSync(dest, sep + block);
+    }
+    return { relPath: entry.file, status: "appended" };
   }
+
   if (!dryRun) {
     fs.mkdirSync(path.dirname(dest), { recursive: true });
-    fs.writeFileSync(dest, entry.content, "utf8");
+    fs.writeFileSync(dest, block, "utf8");
   }
-  return { relPath: entry.file, status: exists ? "overwritten" : "created" };
+  return { relPath: entry.file, status: "created" };
 }
 
 /**
@@ -147,7 +174,7 @@ function materialize(tools, opts = {}) {
       }
     }
     if (tool.entry) {
-      results.push(writeEntry(tool.entry, destRoot, { force, dryRun }));
+      results.push(appendEntry(tool.entry, destRoot, { dryRun }));
     }
   }
 

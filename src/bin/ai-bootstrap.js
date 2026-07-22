@@ -13,14 +13,16 @@ Usage:
   marcos-ai-bootstrap [--claude] [--codex] [--copilot] [--all] [options]
 
 Tool flags (combine as many as you like):
-  --claude          Claude Code agents (.claude/agents), skills (.claude/skills), CLAUDE.md
-  --codex           Codex agents (.codex/agents), skills (.agents/skills)
+  --claude          Claude Code agents (.claude/agents), skills (.claude/skills),
+                     CLAUDE.md (@MARCOS-AI-BOOTSTRAP.md include, appended if it exists)
+  --codex           Codex agents (.codex/agents), skills (.agents/skills),
+                     AGENTS.md (@MARCOS-AI-BOOTSTRAP.md include, appended if it exists)
   --copilot         GitHub Copilot CLI agents (.github/agents), skills (.github/skills),
-                     .github/copilot-instructions.md
+                     .github/copilot-instructions.md (@../MARCOS-AI-BOOTSTRAP.md include)
   --all             All of the above
 
 Always written alongside any tool flag:
-  AGENTS.md, HUMAN.md (tool-agnostic rules + human guide)
+  MARCOS-AI-BOOTSTRAP.md, HUMAN.md (the full tool-agnostic rules + human guide)
 
 Options:
   --dest <path>     Target directory (default: current working directory)
@@ -90,24 +92,34 @@ function main() {
     `${opts.dryRun ? "[dry-run] " : ""}Materialising ${toolLabels} into ${destRoot}\n`
   );
 
-  const byStatus = { created: [], overwritten: [], "skipped-exists": [], "missing-source": [] };
+  const byStatus = {
+    created: [],
+    overwritten: [],
+    appended: [],
+    "already-wired": [],
+    "skipped-exists": [],
+    "missing-source": [],
+  };
   for (const r of results) {
     (byStatus[r.status] || (byStatus[r.status] = [])).push(r.relPath);
   }
 
   for (const r of byStatus.created) console.log(`  created      ${r}`);
   for (const r of byStatus.overwritten) console.log(`  overwritten  ${r}`);
+  for (const r of byStatus.appended) console.log(`  appended     ${r} (@MARCOS-AI-BOOTSTRAP.md include added)`);
+  for (const r of byStatus["already-wired"]) console.log(`  ok           ${r} (already references MARCOS-AI-BOOTSTRAP.md)`);
   for (const r of byStatus["skipped-exists"]) console.log(`  skipped      ${r} (already exists, use --force to overwrite)`);
   for (const r of byStatus["missing-source"]) console.log(`  MISSING      ${r} (not bundled in this package)`);
 
   console.log(
     `\n${byStatus.created.length} created, ${byStatus.overwritten.length} overwritten, ` +
-      `${byStatus["skipped-exists"].length} skipped, ${results.length} total.`
+      `${byStatus.appended.length} appended, ${byStatus["skipped-exists"].length} skipped, ` +
+      `${results.length} total.`
   );
 
   if (!opts.dryRun) {
     console.log(
-      `\nDone. Open AGENTS.md / HUMAN.md, then start your AI tool in ${destRoot} to begin.`
+      `\nDone. Open MARCOS-AI-BOOTSTRAP.md / HUMAN.md, then start your AI tool in ${destRoot} to begin.`
     );
   }
 }
