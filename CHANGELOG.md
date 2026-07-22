@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.4...marcos-ai-bootstrap-v0.1.5) (2026-07-22)
+
+
+### Features
+
+* MARCOS-AI-BOOTSTRAP.md include model + always-prompt models ([99cb41b](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/99cb41b83ddea5234d5cc3af287248b6638c1913))
+* ship rules as MARCOS-AI-BOOTSTRAP.md include + always-prompt models ([2816259](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/281625917532b7453999e311491dd5e7b1b79578))
+
 ## [0.1.4](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.3...marcos-ai-bootstrap-v0.1.4) (2026-07-21)
 
 
