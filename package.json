@@ -9,7 +9,7 @@
   "files": [
     "src/bin",
     "src/lib",
-    "src/AGENTS.md",
+    "src/MARCOS-AI-BOOTSTRAP.md",
     "src/HUMAN.md",
     "src/documents/templates",
     "src/.claude",

@@ -1,12 +1,12 @@
 # Agent Bootstrap
 
-This file contains tool-specific instructions for materialising the canonical agent network defined in `AGENTS.md`. When you start a session, identify your tool below and follow its bootstrap steps.
+This file contains tool-specific instructions for materialising the canonical agent network defined in `MARCOS-AI-BOOTSTRAP.md`. When you start a session, identify your tool below and follow its bootstrap steps.
 
 ---
 
 ## MCP Servers
 
-The MCP server discovery → policy-check → install/verify flow is defined in the **MCP Servers** section of `AGENTS.md` (the canonical, shipped source of truth). Per-tool install/verify commands are covered there for Claude Code, GitHub Copilot CLI, and Codex. The infra, planner, and initialize agents/skills below reference that section directly.
+The MCP server discovery → policy-check → install/verify flow is defined in the **MCP Servers** section of `MARCOS-AI-BOOTSTRAP.md` (the canonical, shipped source of truth). Per-tool install/verify commands are covered there for Claude Code, GitHub Copilot CLI, and Codex. The infra, planner, and initialize agents/skills below reference that section directly.
 
 ---
 
@@ -70,7 +70,7 @@ You are the planner. You run Stage 2 of the two-stage planning process.
 
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
-Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `MARCOS-AI-BOOTSTRAP.md` for the discovery and policy-check flow.
 
 ## Plan template
 Before drafting, read `documents/templates/plan-template.md` and follow its
@@ -165,7 +165,7 @@ You are the infra agent. You modify infrastructure as code only.
 - Never commit to main. Always work on the branch specified in the task.
 - Never run manual CLI commands (az, aws, gcloud, kubectl) against shared or production environments.
 - All changes must be made in IAC files and applied through the deployment pipeline.
-- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `MARCOS-AI-BOOTSTRAP.md` for the discovery and policy-check flow.
 - Validate IAC (e.g. az bicep build) before declaring done.
 - Delegate documentation updates to the docs agent.
 - Do not change application code — that belongs to the code agent.
@@ -349,7 +349,7 @@ At the start of every session, verify `.claude/skills/` contains a directory for
 | watch-ci | `.claude/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-claude` → `triage-claude` → `investigate-claude` → `code-claude`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.claude/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-claude` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-claude` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.claude/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits or pushes. |
-| initialize | `.claude/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Claude Code and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
+| initialize | `.claude/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Claude Code and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
 
 ---
 
@@ -502,14 +502,26 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then verifies every agent's configured model exists in Claude Code and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
 ---
 
-You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in three phases. This skill only edits agent and skill files and MCP config; it never touches source code and never commits.
+You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in the phases below. This skill only edits agent and skill files, the tool's instruction entry-point, and MCP config; it never touches source code and never commits.
+
+## Phase 0 — Rules-file include wiring
+
+The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure this tool's instruction file references them, without clobbering anything the user already has.
+
+1. Locate the instruction file: `CLAUDE.md`.
+2. If it exists and already references `MARCOS-AI-BOOTSTRAP.md`, leave it untouched.
+3. If it exists but does not reference it, APPEND (never overwrite) a short block:
+   > # Marcos AI-Bootstrap
+   >
+   > This repository uses the Marcos AI-Bootstrap agent/skill network. See `@MARCOS-AI-BOOTSTRAP.md` for the agent rules, the MCP server flow, and the canonical agent/skill roles.
+4. If it does not exist, create it containing that block.
 
 ## Phase 1 — MCP server discovery & wiring
 
-1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `AGENTS.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
+1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `MARCOS-AI-BOOTSTRAP.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
 2. Present the candidate servers to the user. Apply the Step 2 policy check and honour the most restrictive source. Never install a policy-blocked server. Install only servers the user explicitly confirms.
 3. Install each approved server with `claude mcp add <name> -- <command...>` and verify with `claude mcp list`.
 4. Wire the approved servers into the agents:
@@ -521,9 +533,9 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 1. Enumerate the models Claude Code currently exposes (the `/model` picker / managed settings). Build the set of available model IDs.
 2. For each file in `.claude/agents/*.md`, read the `model:` frontmatter value and its intended tier (High / Standard / Fast) from the tier table below.
-3. For every `model:` value that is NOT in the available set:
-   - Determine the closest available match — prefer another model in the same tier/family, else the next tier down, else the nearest capability.
-   - Use a dropdown prompt (multiple choice) listing the available models, pre-selecting the closest match, and ask the user to confirm the replacement for that tier.
+3. For every tier (High / Standard / Fast), ALWAYS prompt the user to choose the model — even when the currently configured model is available:
+   - Pick the pre-selected default: the currently configured model if it is in the available set; otherwise the closest available match — prefer another model in the same tier/family, else the next tier down, else the nearest capability.
+   - Use a dropdown prompt (multiple choice) listing every available model, pre-selecting the default from the previous step, and ask the user to confirm or change the model for that tier.
    - Rewrite the agent file's `model:` line with the chosen model. Apply the same choice to every agent sharing that tier so the default profile stays consistent.
 4. Report the final tier → model mapping and the list of edited files.
 
@@ -548,8 +560,8 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 - Never install an MCP server that policy blocks or that the user has not approved.
 - Never let an MCP server perform mutating operations against shared or production environments; the infra guardrails still apply.
 - Never change the plans location without explicit user confirmation.
-- Only edit files under `.claude/agents/`, `.claude/skills/`, and the tool's MCP config. Do not modify source code.
-- Idempotent: re-running makes no changes when servers are already wired, the plans location already matches, and every configured model is available.
+- Only edit files under `.claude/agents/`, `.claude/skills/`, the tool's instruction entry-point (`CLAUDE.md`), and the tool's MCP config. Do not modify source code.
+- Idempotent for MCP wiring and the plans location: re-running makes no changes when servers are already wired and the plans location already matches. Model selection is always offered — re-running re-prompts for each tier, but keeping the current selection leaves the files unchanged.
 ```
 
 ---
@@ -576,7 +588,7 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 **Agent materialisation:** GitHub Copilot CLI materialises custom agents from `.agent.md` files under `.github/agents/` for project-scoped agents, or `~/.copilot/agents/` for personal agents. For portable repository behavior, use `.github/agents/`. The `task` tool can also be used to invoke agents inline for roles that map to built-in agent types.
 
 At the start of every session:
-1. Confirm `AGENTS.md` has been read.
+1. Confirm `MARCOS-AI-BOOTSTRAP.md` has been read.
 2. Use the mixed default profile above unless a role-specific override applies.
 3. Verify `.github/agents/` contains all ten agent files listed below. The canonical `planner` role is split into `planner-discovery-copilot` and `planner-copilot` for Stage 1 / Stage 2 planning. The bug-fix pipeline uses the `log-reader-copilot`, `triage-copilot`, and `investigate-copilot` agents. Create any missing files verbatim from the specs below.
 4. Treat the main conversation agent as the orchestrator.
@@ -653,7 +665,7 @@ You are the planner-copilot agent. You run Stage 2 of the two-stage planning pro
 
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
-Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `MARCOS-AI-BOOTSTRAP.md` for the discovery and policy-check flow.
 
 ## Plan template
 Before drafting, read `documents/templates/plan-template.md` and follow its
@@ -748,7 +760,7 @@ You are the infra-copilot agent. You modify infrastructure as code only.
 - Never commit to main. Always work on the branch specified in the task.
 - Never run manual CLI commands (az, aws, gcloud, kubectl) against shared or production environments.
 - All changes must be made in IAC files and applied through the deployment pipeline.
-- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `MARCOS-AI-BOOTSTRAP.md` for the discovery and policy-check flow.
 - Validate IAC (e.g. az bicep build) before declaring done.
 - Delegate documentation updates to the docs-copilot agent.
 - Do not change application code — that belongs to the code-copilot agent.
@@ -932,7 +944,7 @@ At the start of every session, verify `.github/skills/` contains a directory for
 | watch-ci | `.github/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-copilot` → `triage-copilot` → `investigate-copilot` → `code-copilot`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.github/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-copilot` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-copilot` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.github/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits. |
-| initialize | `.github/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Copilot CLI and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
+| initialize | `.github/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Copilot CLI and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
 
 ---
 
@@ -1079,14 +1091,26 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then verifies every agent's configured model exists in GitHub Copilot CLI and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
 ---
 
-You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in three phases. This skill only edits agent and skill files and MCP config; it never touches source code and never commits.
+You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in the phases below. This skill only edits agent and skill files, the tool's instruction entry-point, and MCP config; it never touches source code and never commits.
+
+## Phase 0 — Rules-file include wiring
+
+The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure this tool's instruction file references them, without clobbering anything the user already has.
+
+1. Locate the instruction file: `.github/copilot-instructions.md`.
+2. If it exists and already references `MARCOS-AI-BOOTSTRAP.md`, leave it untouched.
+3. If it exists but does not reference it, APPEND (never overwrite) a short block:
+   > # Marcos AI-Bootstrap
+   >
+   > This repository uses the Marcos AI-Bootstrap agent/skill network. See `@../MARCOS-AI-BOOTSTRAP.md` for the agent rules, the MCP server flow, and the canonical agent/skill roles.
+4. If it does not exist, create it containing that block.
 
 ## Phase 1 — MCP server discovery & wiring
 
-1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `AGENTS.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
+1. Run the discovery → policy-check → install/verify flow from the "MCP Servers" section of `MARCOS-AI-BOOTSTRAP.md` (Steps 1–4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
 2. Present the candidate servers to the user. Apply the Step 2 policy check and honour the most restrictive source. Never install a policy-blocked server. Install only servers the user explicitly confirms.
 3. Configure each approved server in `~/.copilot/mcp-config.json` (or the project-scoped equivalent) under `mcpServers`, then verify with `/mcp`.
 4. Wire the approved servers into the agents:
@@ -1098,9 +1122,9 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 1. Enumerate the models Copilot CLI currently exposes (the `/model` picker). Build the set of available model IDs.
 2. For each file in `.github/agents/*.agent.md`, read the `model:` frontmatter value and its intended tier (High / Standard / Fast) from the tier table below. Note the `infra-copilot` role-specific override (`gpt-5.4`).
-3. For every `model:` value that is NOT in the available set:
-   - Determine the closest available match — prefer another model in the same tier/family, else the next tier down, else the nearest capability. For a missing role override (`gpt-5.4` on infra), offer the closest available GPT model first.
-   - Use a dropdown prompt (multiple choice) listing the available models, pre-selecting the closest match, and ask the user to confirm the replacement for that tier or role.
+3. For every tier (High / Standard / Fast) and the `infra-copilot` role override, ALWAYS prompt the user to choose the model — even when the currently configured model is available:
+   - Pick the pre-selected default: the currently configured model if it is in the available set; otherwise the closest available match — prefer another model in the same tier/family, else the next tier down, else the nearest capability. For the `infra-copilot` role override (`gpt-5.4`), offer the closest available GPT model first.
+   - Use a dropdown prompt (multiple choice) listing every available model, pre-selecting the default from the previous step, and ask the user to confirm or change the model for that tier or role.
    - Rewrite the agent file's `model:` line with the chosen model. Apply the same choice to every agent sharing that tier so the mixed default profile stays consistent.
 4. Report the final tier/role → model mapping and the list of edited files.
 
@@ -1127,8 +1151,8 @@ Role-specific override: `infra-copilot` uses `gpt-5.4`.
 - Never install an MCP server that policy blocks or that the user has not approved.
 - Never let an MCP server perform mutating operations against shared or production environments; the infra guardrails still apply.
 - Never change the plans location without explicit user confirmation.
-- Only edit files under `.github/agents/`, `.github/skills/`, and the tool's MCP config. Do not modify source code.
-- Idempotent: re-running makes no changes when servers are already wired, the plans location already matches, and every configured model is available.
+- Only edit files under `.github/agents/`, `.github/skills/`, the tool's instruction entry-point (`.github/copilot-instructions.md`), and the tool's MCP config. Do not modify source code.
+- Idempotent for MCP wiring and the plans location: re-running makes no changes when servers are already wired and the plans location already matches. Model selection is always offered — re-running re-prompts for each tier/role, but keeping the current selection leaves the files unchanged.
 ```
 
 ---
@@ -1143,7 +1167,7 @@ Role-specific override: `infra-copilot` uses `gpt-5.4`.
 | Standard | `gpt-5.4` |
 | Fast | `gpt-5.4-mini` |
 
-**Configuration entry-point:** `AGENTS.md` is loaded directly by Codex when present in the workspace. More specific `AGENTS.md` files in subdirectories override or extend these root instructions for work inside those folders.
+**Configuration entry-point:** `AGENTS.md` is loaded directly by Codex when present in the workspace and references the full agent rules via `@MARCOS-AI-BOOTSTRAP.md`. More specific `AGENTS.md` files in subdirectories override or extend these root instructions for work inside those folders.
 
 **Agent location:** `.codex/agents/<name>.toml`
 **These files are intended to be checked in** when the repository wants deterministic project-scoped Codex agents.
@@ -1151,7 +1175,7 @@ Role-specific override: `infra-copilot` uses `gpt-5.4`.
 **Agent materialisation:** Codex materialises custom agents from standalone TOML files under `.codex/agents/` for project-scoped agents, or `~/.codex/agents/` for personal agents. For portable repository behavior, use `.codex/agents/`.
 
 At the start of every session:
-1. Confirm `AGENTS.md` has been read.
+1. Confirm `MARCOS-AI-BOOTSTRAP.md` has been read.
 2. Identify the current tool as Codex.
 3. Verify `.codex/agents/` contains all ten agent files listed below.
 4. Create any missing Codex agent files verbatim from the specs below before starting any other work.
@@ -1227,7 +1251,7 @@ You are the planner. You run Stage 2 of the two-stage planning process.
 
 ## Your job
 Take the approved outline from Stage 1 and produce a complete implementation plan written to documents/plans/<YYYYMMDD>-<topic>.md (e.g. documents/plans/20260408-calendar.md).
-Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+Before drafting the plan, check whether any discovered, policy-approved MCP servers are relevant to the task; initialize or use the relevant ones where available, and incorporate what you learn into the plan. Query the server that matches each platform the plan touches (e.g. `azure` for Azure/IAC work, `cloudflare` for Cloudflare Workers/DNS/edge work) and fold its findings into the plan. See the MCP Servers section of `MARCOS-AI-BOOTSTRAP.md` for the discovery and policy-check flow.
 
 ## Plan template
 Before drafting, read `documents/templates/plan-template.md` and follow its
@@ -1325,7 +1349,7 @@ You are the infra agent. You modify infrastructure as code only.
 - Never commit to main. Always work on the branch specified in the task.
 - Never run manual CLI commands (az, aws, gcloud, kubectl) against shared or production environments.
 - All changes must be made in IAC files and applied through the deployment pipeline.
-- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `AGENTS.md` for the discovery and policy-check flow.
+- Use the discovered, policy-approved MCP servers that match the platform a task touches (e.g. `azure` for Azure/IAC, `cloudflare` for Workers/DNS/edge) plus any read-only docs server for reference material, whenever they are available. See the MCP Servers section of `MARCOS-AI-BOOTSTRAP.md` for the discovery and policy-check flow.
 - Validate IAC (e.g. az bicep build) before declaring done.
 - Delegate documentation updates to the docs agent.
 - Do not change application code — that belongs to the code agent.
@@ -1518,7 +1542,7 @@ At the start of every session, verify `.agents/skills/` contains a directory for
 | watch-ci | `.agents/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-codex` -> `triage-codex` -> `investigate-codex` -> `code-codex`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.agents/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-codex` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-codex` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.agents/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits or pushes. |
-| initialize | `.agents/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Codex and, for any missing model, prompt the user to pick the closest available match and rewrite the agent files. Never commits. |
+| initialize | `.agents/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Codex and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
 
 ---
 
@@ -1671,14 +1695,26 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then verifies every agent's configured model exists in Codex and, for any missing model, prompts the user to pick the closest available match and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
 ---
 
-You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in three phases. This skill only edits agent and skill files and MCP config; it never touches source code and never commits.
+You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in the phases below. This skill only edits agent and skill files, the tool's instruction entry-point, and MCP config; it never touches source code and never commits.
+
+## Phase 0 - Rules-file include wiring
+
+The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure this tool's instruction file references them, without clobbering anything the user already has.
+
+1. Locate the instruction file: `AGENTS.md`.
+2. If it exists and already references `MARCOS-AI-BOOTSTRAP.md`, leave it untouched.
+3. If it exists but does not reference it, APPEND (never overwrite) a short block:
+   > # Marcos AI-Bootstrap
+   >
+   > This repository uses the Marcos AI-Bootstrap agent/skill network. See `@MARCOS-AI-BOOTSTRAP.md` for the agent rules, the MCP server flow, and the canonical agent/skill roles.
+4. If it does not exist, create it containing that block.
 
 ## Phase 1 - MCP server discovery & wiring
 
-1. Run the discovery -> policy-check -> install/verify flow from the "MCP Servers" section of `AGENTS.md` (Steps 1-4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
+1. Run the discovery -> policy-check -> install/verify flow from the "MCP Servers" section of `MARCOS-AI-BOOTSTRAP.md` (Steps 1-4). Inspect repo docs, IAC/config, and dependency manifests to infer the platform footprint and map it to candidate servers.
 2. Present the candidate servers to the user. Apply the Step 2 policy check and honour the most restrictive source. Never install a policy-blocked server. Install only servers the user explicitly confirms.
 3. Configure each approved server in `~/.codex/config.toml` (or the project-scoped `.codex`) under `[mcp_servers.<name>]`, then verify with `codex mcp list`.
 4. Wire the approved servers into the agents:
@@ -1690,9 +1726,9 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 
 1. Enumerate the models Codex currently exposes. Build the set of available model IDs.
 2. For each file in `.codex/agents/*.toml`, read the `model = "..."` value and its intended tier (High / Standard / Fast) from the tier table below.
-3. For every `model` value that is NOT in the available set:
-   - Determine the closest available match - prefer another model in the same tier/family, else the next tier down, else the nearest capability.
-   - Use a dropdown prompt (multiple choice) listing the available models, pre-selecting the closest match, and ask the user to confirm the replacement for that tier.
+3. For every tier (High / Standard / Fast), ALWAYS prompt the user to choose the model - even when the currently configured model is available:
+   - Pick the pre-selected default: the currently configured model if it is in the available set; otherwise the closest available match - prefer another model in the same tier/family, else the next tier down, else the nearest capability.
+   - Use a dropdown prompt (multiple choice) listing every available model, pre-selecting the default from the previous step, and ask the user to confirm or change the model for that tier.
    - Rewrite the agent file's `model = "..."` line with the chosen model. Apply the same choice to every agent sharing that tier so the default profile stays consistent.
 4. Report the final tier -> model mapping and the list of edited files.
 
@@ -1717,8 +1753,8 @@ You are the initialize orchestrator. Reconcile this repo's agent network with th
 - Never install an MCP server that policy blocks or that the user has not approved.
 - Never let an MCP server perform mutating operations against shared or production environments; the infra guardrails still apply.
 - Never change the plans location without explicit user confirmation.
-- Only edit files under `.codex/agents/`, `.agents/skills/`, and the tool's MCP config. Do not modify source code.
-- Idempotent: re-running makes no changes when servers are already wired, the plans location already matches, and every configured model is available.
+- Only edit files under `.codex/agents/`, `.agents/skills/`, the tool's instruction entry-point (`AGENTS.md`), and the tool's MCP config. Do not modify source code.
+- Idempotent for MCP wiring and the plans location: re-running makes no changes when servers are already wired and the plans location already matches. Model selection is always offered - re-running re-prompts for each tier, but keeping the current selection leaves the files unchanged.
 ```
 
 ---
