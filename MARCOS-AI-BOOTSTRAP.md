@@ -131,6 +131,11 @@ Canonical skills:
 **Pipeline:** rules-file include wiring → MCP discovery → user approval → install + wire agents → plans-location discovery → user confirmation → rewrite plan-location references → enumerate available models → user chooses model per tier/role (always) → rewrite agent files.
 **Guardrails:** Never commits or pushes. Only edits agent/skill files, the tool's instruction entry-point, and MCP config — never source code. Appends to (never clobbers) an existing instruction file. Never installs a policy-blocked or unapproved server. Never changes the plans location without explicit user confirmation. Idempotent for include wiring, MCP wiring, and the plans location; model selection is always offered, but keeping the current choice leaves files unchanged.
 
+### pr
+**Purpose:** Open a pull request whose branch commit subjects and PR title both follow the Conventional Commits specification, so the repo's release-please workflow reliably opens a release PR (and, once that release PR is merged, publishes). Prevents the failure mode where a non-conventional commit lands on `main` and release-please silently skips the release.
+**Pipeline:** branch check (never `main`) → validate/repair commit subjects against the Conventional Commit regex → push the branch → derive and validate a conventional PR title → `gh pr create` → report the PR URL and merge/release guidance.
+**Guardrails:** Never merges the PR — opening it is the final step; the user merges. Never pushes to or commits on `main`. Force-pushes only to complete a reword/rebase the user explicitly approved. Never uses `--no-verify`.
+
 ---
 
 ## Delivery Rules

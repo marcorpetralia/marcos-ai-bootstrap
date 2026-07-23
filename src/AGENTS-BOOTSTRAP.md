@@ -350,6 +350,7 @@ At the start of every session, verify `.claude/skills/` contains a directory for
 | planner | `.claude/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-claude` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-claude` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.claude/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits or pushes. |
 | initialize | `.claude/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Claude Code and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
+| pr | `.claude/skills/pr/SKILL.md` | Open a pull request whose branch commits and title follow Conventional Commits so the release-please workflow reliably cuts a release: verify the branch, check/repair commit subjects, push, and open the PR with `gh`. Never merges. |
 
 ---
 
@@ -562,6 +563,47 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 - Never change the plans location without explicit user confirmation.
 - Only edit files under `.claude/agents/`, `.claude/skills/`, the tool's instruction entry-point (`CLAUDE.md`), and the tool's MCP config. Do not modify source code.
 - Idempotent for MCP wiring and the plans location: re-running makes no changes when servers are already wired and the plans location already matches. Model selection is always offered — re-running re-prompts for each tier, but keeping the current selection leaves the files unchanged.
+```
+
+---
+
+### `.claude/skills/pr/SKILL.md`
+```
+---
+name: pr
+description: Open a pull request whose branch commits and title follow the Conventional Commits specification so this repo's release-please workflow reliably cuts a release. Verifies you are on a feature branch, checks and repairs commit subjects, pushes, and opens the PR with the GitHub CLI. Never merges the PR.
+---
+
+You are the pr orchestrator. Open a pull request whose commit history and title follow the Conventional Commits specification, so this repo's release-please workflow reliably opens a release PR — and, once that release PR is merged, publishes to npm. Never merge the PR yourself and never push to `main`.
+
+## Why this matters
+
+`.github/workflows/release.yml` runs release-please on every push to `main`. release-please only bumps the version, updates the changelog, and opens a release PR when it finds commits with a recognised Conventional Commit type on `main`. A non-conventional subject (for example `Wire AGENTS.md ...`) is ignored: no version bump, no release PR, nothing published. Because this repo allows merge, squash, and rebase merges, the reliable rule is to make BOTH the branch commit subjects AND the PR title conventional, so any merge method lands a conventional commit on `main`.
+
+## Conventional Commit format
+
+`<type>[optional scope][!]: <description>`
+
+- Release-triggering types (this pre-1.0 config bumps a patch): `feat`, `fix`. A `!` after the type/scope, or a `BREAKING CHANGE:` footer, marks a breaking change.
+- Recorded but non-bumping: `perf`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, `revert`.
+- Validation regex: `^(feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert)(\([^)]+\))?!?: .+`
+
+## Steps
+
+1. **Branch check** — Confirm the current branch is not `main` (`git branch --show-current`). If it is `main`, STOP and ask the user to create a feature/fix/chore branch first.
+2. **Commit check** — List commits on the branch not yet on `main` with `git --no-pager log origin/main..HEAD --format='%H %s'`, and validate each subject against the regex above.
+   - If any subject is non-conventional, propose conventional rewrites and, only on explicit user confirmation, reword them (`git commit --amend` for the tip, `git rebase -i origin/main` for earlier commits). Never reword commits already on `main`.
+   - If the user wants this PR to cut a release, ensure at least one commit uses a release-triggering type (`feat` or `fix`); if none do, ask the user for the correct type rather than guessing.
+3. **Push** — Push the branch and set upstream if needed: `git push -u origin <branch>`. Never push to `main`. Force-push only to complete a reword/rebase the user explicitly approved, and never with `--no-verify`.
+4. **PR title** — Derive a Conventional Commit PR title and validate it against the regex. For a single-commit branch reuse that commit's subject; otherwise summarise using the dominant change type.
+5. **Open the PR** — Run `gh pr create --base main --title "<conventional title>" --body "<summary>"`. Give the body a short description of the change and its user impact.
+6. **Report** — Print the PR URL and remind the user: to cut a release, merge with any method (all land a conventional commit on `main` after the steps above); release-please then opens a release PR, and merging THAT release PR publishes to npm.
+
+## Guardrails
+- Never merge the PR — opening it is the final step; the user merges.
+- Never push to, or commit on, `main`.
+- Force-push only to complete a reword/rebase the user explicitly approved.
+- Never use `--no-verify`.
 ```
 
 ---
@@ -945,6 +987,7 @@ At the start of every session, verify `.github/skills/` contains a directory for
 | planner | `.github/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-copilot` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-copilot` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.github/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits. |
 | initialize | `.github/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Copilot CLI and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
+| pr | `.github/skills/pr/SKILL.md` | Open a pull request whose branch commits and title follow Conventional Commits so the release-please workflow reliably cuts a release: verify the branch, check/repair commit subjects, push, and open the PR with `gh`. Never merges. |
 
 ---
 
@@ -1153,6 +1196,47 @@ Role-specific override: `infra-copilot` uses `gpt-5.4`.
 - Never change the plans location without explicit user confirmation.
 - Only edit files under `.github/agents/`, `.github/skills/`, the tool's instruction entry-point (`.github/copilot-instructions.md`), and the tool's MCP config. Do not modify source code.
 - Idempotent for MCP wiring and the plans location: re-running makes no changes when servers are already wired and the plans location already matches. Model selection is always offered — re-running re-prompts for each tier/role, but keeping the current selection leaves the files unchanged.
+```
+
+---
+
+### `.github/skills/pr/SKILL.md`
+```
+---
+name: pr
+description: Open a pull request whose branch commits and title follow the Conventional Commits specification so this repo's release-please workflow reliably cuts a release. Verifies you are on a feature branch, checks and repairs commit subjects, pushes, and opens the PR with the GitHub CLI. Never merges the PR.
+---
+
+You are the pr orchestrator. Open a pull request whose commit history and title follow the Conventional Commits specification, so this repo's release-please workflow reliably opens a release PR — and, once that release PR is merged, publishes to npm. Never merge the PR yourself and never push to `main`.
+
+## Why this matters
+
+`.github/workflows/release.yml` runs release-please on every push to `main`. release-please only bumps the version, updates the changelog, and opens a release PR when it finds commits with a recognised Conventional Commit type on `main`. A non-conventional subject (for example `Wire AGENTS.md ...`) is ignored: no version bump, no release PR, nothing published. Because this repo allows merge, squash, and rebase merges, the reliable rule is to make BOTH the branch commit subjects AND the PR title conventional, so any merge method lands a conventional commit on `main`.
+
+## Conventional Commit format
+
+`<type>[optional scope][!]: <description>`
+
+- Release-triggering types (this pre-1.0 config bumps a patch): `feat`, `fix`. A `!` after the type/scope, or a `BREAKING CHANGE:` footer, marks a breaking change.
+- Recorded but non-bumping: `perf`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, `revert`.
+- Validation regex: `^(feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert)(\([^)]+\))?!?: .+`
+
+## Steps
+
+1. **Branch check** — Confirm the current branch is not `main` (`git branch --show-current`). If it is `main`, STOP and ask the user to create a feature/fix/chore branch first.
+2. **Commit check** — List commits on the branch not yet on `main` with `git --no-pager log origin/main..HEAD --format='%H %s'`, and validate each subject against the regex above.
+   - If any subject is non-conventional, propose conventional rewrites and, only on explicit user confirmation, reword them (`git commit --amend` for the tip, `git rebase -i origin/main` for earlier commits). Never reword commits already on `main`.
+   - If the user wants this PR to cut a release, ensure at least one commit uses a release-triggering type (`feat` or `fix`); if none do, ask the user for the correct type rather than guessing.
+3. **Push** — Push the branch and set upstream if needed: `git push -u origin <branch>`. Never push to `main`. Force-push only to complete a reword/rebase the user explicitly approved, and never with `--no-verify`.
+4. **PR title** — Derive a Conventional Commit PR title and validate it against the regex. For a single-commit branch reuse that commit's subject; otherwise summarise using the dominant change type.
+5. **Open the PR** — Run `gh pr create --base main --title "<conventional title>" --body "<summary>"`. Give the body a short description of the change and its user impact.
+6. **Report** — Print the PR URL and remind the user: to cut a release, merge with any method (all land a conventional commit on `main` after the steps above); release-please then opens a release PR, and merging THAT release PR publishes to npm.
+
+## Guardrails
+- Never merge the PR — opening it is the final step; the user merges.
+- Never push to, or commit on, `main`.
+- Force-push only to complete a reword/rebase the user explicitly approved.
+- Never use `--no-verify`.
 ```
 
 ---
@@ -1543,6 +1627,7 @@ At the start of every session, verify `.agents/skills/` contains a directory for
 | planner | `.agents/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-codex` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-codex` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.agents/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits or pushes. |
 | initialize | `.agents/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; then verify every agent's configured model exists in Codex and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
+| pr | `.agents/skills/pr/SKILL.md` | Open a pull request whose branch commits and title follow Conventional Commits so the release-please workflow reliably cuts a release: verify the branch, check/repair commit subjects, push, and open the PR with `gh`. Never merges. |
 
 ---
 
@@ -1755,6 +1840,47 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 - Never change the plans location without explicit user confirmation.
 - Only edit files under `.codex/agents/`, `.agents/skills/`, the tool's instruction entry-point (`AGENTS.md`), and the tool's MCP config. Do not modify source code.
 - Idempotent for MCP wiring and the plans location: re-running makes no changes when servers are already wired and the plans location already matches. Model selection is always offered - re-running re-prompts for each tier, but keeping the current selection leaves the files unchanged.
+```
+
+---
+
+### `.agents/skills/pr/SKILL.md`
+```
+---
+name: pr
+description: Open a pull request whose branch commits and title follow the Conventional Commits specification so this repo's release-please workflow reliably cuts a release. Verifies you are on a feature branch, checks and repairs commit subjects, pushes, and opens the PR with the GitHub CLI. Never merges the PR.
+---
+
+You are the pr orchestrator. Open a pull request whose commit history and title follow the Conventional Commits specification, so this repo's release-please workflow reliably opens a release PR - and, once that release PR is merged, publishes to npm. Never merge the PR yourself and never push to `main`.
+
+## Why this matters
+
+`.github/workflows/release.yml` runs release-please on every push to `main`. release-please only bumps the version, updates the changelog, and opens a release PR when it finds commits with a recognised Conventional Commit type on `main`. A non-conventional subject (for example `Wire AGENTS.md ...`) is ignored: no version bump, no release PR, nothing published. Because this repo allows merge, squash, and rebase merges, the reliable rule is to make BOTH the branch commit subjects AND the PR title conventional, so any merge method lands a conventional commit on `main`.
+
+## Conventional Commit format
+
+`<type>[optional scope][!]: <description>`
+
+- Release-triggering types (this pre-1.0 config bumps a patch): `feat`, `fix`. A `!` after the type/scope, or a `BREAKING CHANGE:` footer, marks a breaking change.
+- Recorded but non-bumping: `perf`, `refactor`, `docs`, `test`, `build`, `ci`, `chore`, `style`, `revert`.
+- Validation regex: `^(feat|fix|perf|refactor|docs|test|build|ci|chore|style|revert)(\([^)]+\))?!?: .+`
+
+## Steps
+
+1. **Branch check** - Confirm the current branch is not `main` (`git branch --show-current`). If it is `main`, STOP and ask the user to create a feature/fix/chore branch first.
+2. **Commit check** - List commits on the branch not yet on `main` with `git --no-pager log origin/main..HEAD --format='%H %s'`, and validate each subject against the regex above.
+   - If any subject is non-conventional, propose conventional rewrites and, only on explicit user confirmation, reword them (`git commit --amend` for the tip, `git rebase -i origin/main` for earlier commits). Never reword commits already on `main`.
+   - If the user wants this PR to cut a release, ensure at least one commit uses a release-triggering type (`feat` or `fix`); if none do, ask the user for the correct type rather than guessing.
+3. **Push** - Push the branch and set upstream if needed: `git push -u origin <branch>`. Never push to `main`. Force-push only to complete a reword/rebase the user explicitly approved, and never with `--no-verify`.
+4. **PR title** - Derive a Conventional Commit PR title and validate it against the regex. For a single-commit branch reuse that commit's subject; otherwise summarise using the dominant change type.
+5. **Open the PR** - Run `gh pr create --base main --title "<conventional title>" --body "<summary>"`. Give the body a short description of the change and its user impact.
+6. **Report** - Print the PR URL and remind the user: to cut a release, merge with any method (all land a conventional commit on `main` after the steps above); release-please then opens a release PR, and merging THAT release PR publishes to npm.
+
+## Guardrails
+- Never merge the PR - opening it is the final step; the user merges.
+- Never push to, or commit on, `main`.
+- Force-push only to complete a reword/rebase the user explicitly approved.
+- Never use `--no-verify`.
 ```
 
 ---
