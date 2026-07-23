@@ -15,14 +15,17 @@ Usage:
 Tool flags (combine as many as you like):
   --claude          Claude Code agents (.claude/agents), skills (.claude/skills),
                      CLAUDE.md (@MARCOS-AI-BOOTSTRAP.md include, appended if it exists)
-  --codex           Codex agents (.codex/agents), skills (.agents/skills),
-                     AGENTS.md (@MARCOS-AI-BOOTSTRAP.md include, appended if it exists)
+  --codex           Codex agents (.codex/agents), skills (.agents/skills)
+                     (Codex reads the always-written root AGENTS.md)
   --copilot         GitHub Copilot CLI agents (.github/agents), skills (.github/skills),
                      .github/copilot-instructions.md (@../MARCOS-AI-BOOTSTRAP.md include)
   --all             All of the above
 
-Always written alongside any tool flag:
+Always written (regardless of tool flags):
   MARCOS-AI-BOOTSTRAP.md, HUMAN.md (the full tool-agnostic rules + human guide)
+  AGENTS.md         universal entry-point wired with @MARCOS-AI-BOOTSTRAP.md
+                     (created if absent; the include is appended to an existing
+                     file without overwriting your content)
 
 Options:
   --dest <path>     Target directory (default: current working directory)

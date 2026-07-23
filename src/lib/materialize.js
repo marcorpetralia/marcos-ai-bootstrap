@@ -43,6 +43,14 @@ function includeBlock(ref) {
 // Marker used to detect an already-wired instruction file (idempotency).
 const INCLUDE_MARKER = "MARCOS-AI-BOOTSTRAP.md";
 
+// AGENTS.md is the broadest cross-tool convention (read by Codex, the Copilot
+// coding agent, Cursor, Aider, and a growing set of others). It is therefore
+// wired on every invocation, regardless of which tool flags were passed, as a
+// thin @-include of the shipped rules. Tool-native entry-points (CLAUDE.md,
+// .github/copilot-instructions.md) are still written alongside it. Codex reads
+// this same file, so it no longer needs a separate tool-specific entry.
+const CORE_ENTRY = { file: "AGENTS.md", include: "@MARCOS-AI-BOOTSTRAP.md" };
+
 const TOOLS = {
   claude: {
     label: "Claude Code",
@@ -53,8 +61,10 @@ const TOOLS = {
   codex: {
     label: "Codex",
     dirs: [".codex/agents", ".agents/skills"],
-    // Codex loads AGENTS.md directly from the workspace root.
-    entry: { file: "AGENTS.md", include: "@MARCOS-AI-BOOTSTRAP.md" },
+    // Codex loads AGENTS.md directly from the workspace root, which is now
+    // always written as the universal CORE_ENTRY, so no tool-specific entry is
+    // needed here.
+    entry: null,
   },
   copilot: {
     label: "GitHub Copilot CLI",
@@ -159,6 +169,9 @@ function materialize(tools, opts = {}) {
     results.push(copyOne(cf.src, cf.dest, destRoot, { force, dryRun }));
   }
 
+  // AGENTS.md is wired on every invocation as the universal entry-point.
+  results.push(appendEntry(CORE_ENTRY, destRoot, { dryRun }));
+
   for (const toolName of tools) {
     const tool = TOOLS[toolName];
     if (!tool) continue;
@@ -181,4 +194,4 @@ function materialize(tools, opts = {}) {
   return { results, tools, destRoot };
 }
 
-module.exports = { materialize, TOOLS, CORE_FILES, PACKAGE_ROOT };
+module.exports = { materialize, TOOLS, CORE_FILES, CORE_ENTRY, PACKAGE_ROOT };
