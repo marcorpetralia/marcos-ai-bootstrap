@@ -25,15 +25,17 @@ npx marcos-ai-bootstrap --all            # every tool at once
 Run it from the root of the repository you want to bootstrap. It writes three always-present
 core files—`MARCOS-AI-BOOTSTRAP.md`, `HUMAN.md` (the full tool-agnostic rules + human guide), and
 `documents/templates/plan-template.md` (an empty scaffold for future implementation plans)—alongside
-the agent/skill files for whichever tool(s) you selected, and appends an `@MARCOS-AI-BOOTSTRAP.md`
-include to your tool's instruction file (creating it only if absent, never overwriting existing content).
+the agent/skill files for whichever tool(s) you selected. It always wires the universal `AGENTS.md`
+entry-point with an `@MARCOS-AI-BOOTSTRAP.md` include, and also appends the tool-native include to
+your selected tool's instruction file (creating each only if absent, never overwriting existing content).
 The Stage-2 planner agents
 (planner-copilot, planner-claude, planner-codex) read the plan template before writing plans.
 
 | Flag | Writes |
 |---|---|
+| _(always)_ | `MARCOS-AI-BOOTSTRAP.md`, `HUMAN.md`, `documents/templates/plan-template.md`, and `AGENTS.md` (the universal entry-point, append `@MARCOS-AI-BOOTSTRAP.md` include) |
 | `--claude` | `.claude/agents/*.md`, `.claude/skills/**/SKILL.md`, `CLAUDE.md` (append `@MARCOS-AI-BOOTSTRAP.md` include) |
-| `--codex` | `.codex/agents/*.toml`, `.agents/skills/**/SKILL.md`, `AGENTS.md` (append `@MARCOS-AI-BOOTSTRAP.md` include) |
+| `--codex` | `.codex/agents/*.toml`, `.agents/skills/**/SKILL.md` (Codex reads the always-written `AGENTS.md`) |
 | `--copilot` | `.github/agents/*.agent.md`, `.github/skills/**/SKILL.md`, `.github/copilot-instructions.md` (append `@../MARCOS-AI-BOOTSTRAP.md` include) |
 | `--all` | all of the above |
 
