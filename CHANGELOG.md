@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.6](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.5...marcos-ai-bootstrap-v0.1.6) (2026-07-24)
+
+
+### Features
+
+* add pr skill enforcing conventional-commit PRs for release-please ([3475944](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/3475944ef42e6d9c2f0922cf9d303d89fa2d8c4c))
+* add pr skill enforcing conventional-commit PRs for release-please ([f507fd6](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/f507fd66b9b3331dce08b2059c5949389bd77a96))
+* generalize pr skill and add convention discovery to initialize ([572bd49](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/572bd4926a884f615dc307c2525403e69544ba9d))
+
 ## [0.1.5](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.4...marcos-ai-bootstrap-v0.1.5) (2026-07-22)
 
 
