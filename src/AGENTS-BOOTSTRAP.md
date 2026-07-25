@@ -392,7 +392,8 @@ Repeat until green or 5 iterations reached:
 3. **Investigate** (HARD only) — invoke the `investigate-claude` agent with the diagnostic report and triage output; receive a root-cause analysis and fix strategy.
 4. **Fix** — invoke the `code-claude` agent with the triage fix suggestion (EASY) or investigate fix strategy (HARD) to apply the change.
 5. **Validate** — run the narrowest relevant tests, lint, or build command before attempting a new CI run.
-6. **Commit & push** — commit the fix on the current feature branch and push; never push to `main`.
+6. **Commit & push** — because the user invoked this skill to drive CI green, commit
+   the fix and push **on the current feature branch only**; never commit or push to `main`.
 7. **Re-trigger** — use the trigger method determined above.
 8. **Wait** — poll `gh run watch` until the new run completes.
 9. If still failing, go to step 1.
@@ -400,6 +401,8 @@ Repeat until green or 5 iterations reached:
 After 5 iterations without green, stop and report the current state and last error to the user.
 
 ## Guardrails
+- This skill commits and pushes as an explicitly user-invoked action, on the
+  feature branch only — never autonomously and never on `main`.
 - Never push to `main`.
 - Never force-push.
 - Never use `--no-verify`.
@@ -1046,7 +1049,8 @@ Repeat until green or 5 iterations reached:
 2. **Triage** — invoke the `triage-copilot` agent with the diagnostic report; receive EASY or HARD classification.
 3. **Investigate** (HARD only) — invoke the `investigate-copilot` agent with the diagnostic report and triage output; receive a root-cause analysis and fix strategy.
 4. **Fix** — invoke the `code-copilot` agent with the triage fix suggestion (EASY) or investigate fix strategy (HARD) to apply the change.
-5. **Commit & push** — commit the fix on the current feature branch and push; never push to `main`.
+5. **Commit & push** — because the user invoked this skill to drive CI green, commit
+   the fix and push **on the current feature branch only**; never commit or push to `main`.
 6. **Re-trigger** — use the trigger method determined above.
 7. **Wait** — poll `gh run watch` until the new run completes.
 8. If still failing, go to step 1.
@@ -1054,6 +1058,8 @@ Repeat until green or 5 iterations reached:
 After 5 iterations without green, stop and report the current state and last error to the user.
 
 ## Guardrails
+- This skill commits and pushes as an explicitly user-invoked action, on the
+  feature branch only — never autonomously and never on `main`.
 - Never push to `main`.
 - Never force-push.
 - Never use `--no-verify`.
@@ -1705,7 +1711,8 @@ Repeat until green or 5 iterations reached:
 3. **Investigate (HARD only)**: invoke `investigate-codex` with the diagnostic report and triage output; receive a root-cause analysis and fix strategy.
 4. **Fix**: invoke `code-codex` with the triage fix suggestion (EASY) or investigate fix strategy (HARD) to apply the change.
 5. **Validate**: run the narrowest relevant tests, lint, or build command before attempting a new CI run.
-6. **Commit & push**: commit the fix on the current feature branch and push; never push to `main`.
+6. **Commit & push**: because the user invoked this skill to drive CI green, commit
+   the fix and push **on the current feature branch only**; never commit or push to `main`.
 7. **Re-trigger**: use the trigger method determined above.
 8. **Wait**: poll `gh run watch` until the new run completes.
 9. If still failing, go to step 1.
@@ -1713,6 +1720,8 @@ Repeat until green or 5 iterations reached:
 After 5 iterations without green, stop and report the current state and last error to the user.
 
 ## Guardrails
+- This skill commits and pushes as an explicitly user-invoked action, on the
+  feature branch only — never autonomously and never on `main`.
 - Never push to `main`.
 - Never force-push.
 - Never use `--no-verify`.

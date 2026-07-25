@@ -19,7 +19,7 @@ skills are ready to use immediately. See the root `README.md` for all flags (`--
 Once the files are written:
 
 1. Confirm `MARCOS-AI-BOOTSTRAP.md`, `HUMAN.md`, and your tool's agent/skill files are present in the repo.
-2. Switch to your most powerful model at medium effort using **`/model`** e.g. opus 4.8 @ medium effort
+2. Switch to your most capable model at medium effort using **`/model`** (e.g. an Opus-class model, as an interchangeable example — not a requirement)
 3. Run the **`/initialize`** skill once to reconcile MCP servers, plan-document location, and model IDs with your environment.
 4. **`/clear`** — Clear the context window.
 5. use **`/model`** to switch your model to your most powerful model @ low effort (to save tokens)
