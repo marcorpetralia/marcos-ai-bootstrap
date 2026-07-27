@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.7](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.6...marcos-ai-bootstrap-v0.1.7) (2026-07-27)
+
+
+### Features
+
+* public-readiness polish for README, guardrails, tests, and governance docs ([f2c971a](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/f2c971a7190e01084cc6f13e78079cb53d777375))
+* public-readiness polish for README, guardrails, tests, and governance docs ([67946cd](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/67946cdf8786c53e43aad025fe9264b3bef387fc))
+
 ## [0.1.6](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.5...marcos-ai-bootstrap-v0.1.6) (2026-07-24)
 
 
