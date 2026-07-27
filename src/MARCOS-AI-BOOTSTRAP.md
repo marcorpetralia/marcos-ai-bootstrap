@@ -30,6 +30,11 @@ Infer the project's platform footprint before installing anything. Inspect, in o
 
 Map the footprint to candidate MCP servers. Common mappings (extend as the ecosystem grows):
 
+> The package/endpoint values below are **illustrative and may churn** — MCP
+> server names, packages, and URLs change upstream. Treat them as starting
+> points and confirm the current command against the server's own docs before
+> installing.
+
 | Signal in repo | Candidate MCP server | Package / endpoint |
 |---|---|---|
 | Azure services, Bicep, `az`, `DefaultAzureCredential` | `azure` | `npx -y @azure/mcp@latest server start` |
@@ -93,9 +98,13 @@ args = ["-y", "<package>", "..."]
 
 ## Guardrails
 
-- **No agent shall commit code.** Agents modify files and write changes; the user owns committing those changes to git.
-- Never commit to main
-- Never push to main
+- **No agent commits or pushes autonomously.** Agents modify files and write
+  changes; the user owns committing and pushing. The single exception is a skill
+  the user has explicitly invoked to do so (e.g. `watch-ci`): such a skill may
+  commit and push **only on a feature branch**, and **only to perform the action
+  the user invoked it for**. It must never commit or push unprompted.
+- **Never commit to `main`.** No exception — the carve-out above never applies to `main`.
+- **Never push to `main`.** No exception — the carve-out above never applies to `main`.
 - Always work on a feature / chore / bugfix branch
 - Never merge a Pull Request
 - Never update cloud infrastructure manually — all changes must go through IAC or deployment pipelines
@@ -113,7 +122,10 @@ Canonical skills:
 **Target resolution:** Accepts nothing (current-branch PR), a PR number, or a pasted PR URL, workflow-run URL, or workflow-file URL. Parses `owner/repo` from URLs and passes `--repo` to `gh` for remote targets.
 **Trigger-aware re-runs:** Inspects the workflow's `on:` block and classifies the trigger as auto-on-push, manual-dispatch, scheduled, or other. Re-triggers by pushing (auto-on-push), by `gh workflow run` (manual-dispatch/other), or stops with an explanation when a scheduled-only workflow cannot be forced.
 **Pipeline:** `log-reader` → `triage` → (`investigate` if HARD) → `code`, then commit/push on the feature branch and loop (max 5 iterations).
-**Guardrails:** Never pushes to `main`, never force-pushes, never `--no-verify`. For remote-repo targets it cannot edit locally, so it watches, diagnoses, and reports the fix back to the user.
+**Guardrails:** Runs only because the user invoked it; on that authority it may
+commit and push its fixes **on the feature branch only**. Never pushes or commits
+to `main`, never force-pushes, never `--no-verify`. For remote-repo targets it
+cannot edit locally, so it watches, diagnoses, and reports the fix back to the user.
 
 ### planner
 **Purpose:** Formalise the two-stage planning flow into a single command. Runs the `planner-discovery` agent (Stage 1: clarifying questions + outline), gates on explicit user approval, then runs the `planner` agent (Stage 2: full implementation plan written to `documents/plans/<YYYYMMDD>-<topic>.md`).
@@ -150,7 +162,8 @@ Canonical skills:
 
 ## Documentation Rules
 
-- Update the root `README.md` on every change.
+- Update the root `README.md` when a change affects how the tool is installed,
+  invoked, or what it produces — not for internal-only changes with no user-facing effect.
 - Update the service-level `README.md` inside the affected application on relevant changes.
 - Update documentation last — after implementation and verification are complete.
 - Never leave examples, commands, file paths, or architecture descriptions stale after a change.

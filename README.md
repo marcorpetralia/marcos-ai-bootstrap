@@ -1,14 +1,20 @@
 # marcos-ai-bootstrap
 
-AI tools for doing work. No overcomplications.
+[![npm version](https://img.shields.io/npm/v/marcos-ai-bootstrap)](https://www.npmjs.com/package/marcos-ai-bootstrap)
+[![license](https://img.shields.io/npm/l/marcos-ai-bootstrap)](./LICENSE)
+[![CI](https://github.com/marcorpetralia/marcos-ai-bootstrap/actions/workflows/ci.yml/badge.svg)](https://github.com/marcorpetralia/marcos-ai-bootstrap/actions/workflows/ci.yml)
 
-Tool-agnostic agent/skill network that is built around a basic flow of plan -> implement -> deploy -> fix -> deploy etc.
+Simple agent workflows designed for getting work done, as quickly and cheaply as possible whilst ensuring guardrails are followed.
 
-Currently supporting **Claude Code**, **Codex**, and **GitHub Copilot CLI** but easily adjustable to fit your workflow.
+A tool-agnostic agent/skill network that gives Claude Code, Codex, and GitHub Copilot CLI a shared plan → implement → deploy → fix workflow — drop it into any repository with one command.
+
+**Note:** marcos-ai-bootstrap is pre-1.0 and evolving. SemVer stabilizes at `1.0.0`. See ["Releasing to npm"](#releasing-to-npm) for the current version and release process.
 
 See [`HUMAN.md`](./HUMAN.md) for the day-to-day workflow once the network is set up.
 
 ## Quick start: the `marcos-ai-bootstrap` CLI
+
+**Requires Node.js >= 18**
 
 The fastest way to bring this agent network into any repository — no AI turn required,
 works the same on Windows/Mac/Linux, and doesn't care whether the target project is
@@ -58,6 +64,10 @@ Existing files are never clobbered unless you pass `--force`, so it's safe to re
 npm install -g marcos-ai-bootstrap
 marcos-ai-bootstrap --all
 ```
+
+## Demo
+
+<!-- TODO: GIF/asciinema demo recording coming soon — drop it here -->
 
 ## Repository layout
 

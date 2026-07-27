@@ -6,6 +6,9 @@
     "marcos-ai-bootstrap": "src/bin/ai-bootstrap.js"
   },
   "main": "src/lib/materialize.js",
+  "scripts": {
+    "test": "node --test"
+  },
   "files": [
     "src/bin",
     "src/lib",
@@ -19,7 +22,7 @@
     "src/.github/skills"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "license": "MIT",
   "repository": {

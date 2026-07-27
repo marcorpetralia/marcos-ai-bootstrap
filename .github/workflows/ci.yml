@@ -19,8 +19,8 @@ jobs:
         with:
           node-version: 24
 
-      # Placeholder — replace with real checks (tests, lint, build, package sanity).
-      # e.g. `npm ci`, `npm test`, `npm run lint`,
-      #      `node src/bin/ai-bootstrap.js --all --dry-run --dest "$RUNNER_TEMP/aib-check"`
-      - name: Placeholder check
-        run: echo "CI placeholder — add tests and checks here."
+      - name: Run tests
+        run: npm test
+
+      - name: Package sanity (dry-run materialise)
+        run: node src/bin/ai-bootstrap.js --all --dry-run --dest "$RUNNER_TEMP/aib-check"
