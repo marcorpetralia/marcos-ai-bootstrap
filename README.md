@@ -4,6 +4,8 @@
 [![license](https://img.shields.io/npm/l/marcos-ai-bootstrap)](./LICENSE)
 [![CI](https://github.com/marcorpetralia/marcos-ai-bootstrap/actions/workflows/ci.yml/badge.svg)](https://github.com/marcorpetralia/marcos-ai-bootstrap/actions/workflows/ci.yml)
 
+Simple agent workflows designed for getting work done, as quickly and cheaply as possible whilst ensuring guardrails are followed.
+
 A tool-agnostic agent/skill network that gives Claude Code, Codex, and GitHub Copilot CLI a shared plan → implement → deploy → fix workflow — drop it into any repository with one command.
 
 **Note:** marcos-ai-bootstrap is pre-1.0 and evolving. SemVer stabilizes at `1.0.0`. See ["Releasing to npm"](#releasing-to-npm) for the current version and release process.
