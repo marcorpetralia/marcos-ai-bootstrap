@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.8](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.7...marcos-ai-bootstrap-v0.1.8) (2026-07-28)
+
+
+### Bug Fixes
+
+* ship PR [#19](https://github.com/marcorpetralia/marcos-ai-bootstrap/issues/19) skill rename and harden release guardrails ([d5c14b3](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/d5c14b38c16bdc3d753f9eefa31043664669003b))
+* ship PR [#19](https://github.com/marcorpetralia/marcos-ai-bootstrap/issues/19) skill rename and harden release guardrails ([5b361f4](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/5b361f4f1f6fbad6d9b877435dfc1764fd08e9e8))
+
 ## [0.1.7](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.6...marcos-ai-bootstrap-v0.1.7) (2026-07-27)
 
 
