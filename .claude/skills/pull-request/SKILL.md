@@ -1,9 +1,9 @@
 ---
-name: pr
+name: pull-request
 description: Open a pull request that follows this repository's conventions for branch names, commit messages, and PR titles and bodies. Verifies you are on a working branch, checks and repairs the branch/commits/title against the active convention profile, pushes, and opens the PR with the GitHub CLI. Never merges the PR.
 ---
 
-You are the pr orchestrator. Open a pull request that conforms to this repository's contribution conventions, then hand off to the user to merge. Never merge the PR yourself and never push to the default branch.
+You are the pull-request orchestrator. Open a pull request that conforms to this repository's contribution conventions, then hand off to the user to merge. Never merge the PR yourself and never push to the default branch.
 
 ## Convention profile
 

@@ -40,7 +40,7 @@ chore: bump Node engine minimum to >=18
 
 These commits drive [release-please](https://github.com/googleapis/release-please) for automated releases, so consistent formatting matters.
 
-The `pr` skill (`/pr` in Claude Code / Copilot CLI) can help enforce this convention.
+The `pull-request` skill (`/pull-request` in Claude Code / Copilot CLI) can help enforce this convention.
 
 ### Running tests locally
 
