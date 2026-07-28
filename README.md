@@ -120,10 +120,13 @@ major version:
 
 | Commit type | Result (pre-1.0) |
 |---|---|
-| `fix:` / `feat:` / `refactor:` … | patch (e.g. `0.1.0` → `0.1.1`) |
+| `fix:` / `feat:` | patch (e.g. `0.1.0` → `0.1.1`) |
 | `feat!:` or a `BREAKING CHANGE:` footer | minor (e.g. `0.1.0` → `0.2.0`) |
 | any commit with a `Release-As: X.Y.Z` footer | forces exactly that version |
 
+These commit types do **not** trigger a release on their own: `refactor:`, `chore:`,
+`docs:`, `perf:`, `test:`, `ci:`, `build:`, `style:`. (`bump-patch-for-minor-pre-major`
+only sizes a bump that is already triggered — it does not make these types releasable.)
+
 Cut `1.0.0` with a `Release-As: 1.0.0` commit when the API is stable; after that, standard
-SemVer applies (`feat:` → minor, breaking → major). Non-releasable commits (e.g. `docs:`,
-`ci:`) won't create a Release PR on their own.
+SemVer applies (`feat:` → minor, breaking → major).

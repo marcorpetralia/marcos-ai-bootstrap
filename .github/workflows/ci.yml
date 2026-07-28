@@ -24,3 +24,23 @@ jobs:
 
       - name: Package sanity (dry-run materialise)
         run: node src/bin/ai-bootstrap.js --all --dry-run --dest "$RUNNER_TEMP/aib-check"
+
+  release-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need tags + full history to find the last release
+      - name: Advisory — warn if no release-triggering commit since last release
+        shell: bash
+        run: |
+          last_tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+          range="${last_tag:+$last_tag..}HEAD"
+          # release-triggering: feat:/fix: (optionally scoped, optionally breaking !) or a BREAKING CHANGE footer
+          if git log "$range" --format='%s%n%b' \
+               | grep -Eq '^(feat|fix)(\([^)]+\))?!?:|^BREAKING CHANGE:|!:'; then
+            echo "Release-triggering commit found since ${last_tag:-repo start}."
+          else
+            echo "::warning::No feat/fix/breaking commit since ${last_tag:-repo start}; merging to main will not open a Release PR."
+          fi
+          exit 0   # advisory only — never fail the build
