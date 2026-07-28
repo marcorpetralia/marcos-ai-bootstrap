@@ -1,6 +1,6 @@
 ---
 name: initialize
-description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; scans past PRs, branch names, and commit history and, after user confirmation, customises the `pr` skill's convention profile; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; scans past PRs, branch names, and commit history and, after user confirmation, customises the `pull-request` skill's convention profile; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
 ---
 
 You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in the phases below. This skill only edits agent and skill files, the tool's instruction entry-point, and MCP config; it never touches source code and never commits.
@@ -57,7 +57,7 @@ Role-specific override: `infra-copilot` uses `gpt-5.4`.
 
 ## Phase 4 — PR & contribution convention discovery
 
-Customise the `pr` skill so it matches how THIS repository actually works, learned from its own history rather than assumed defaults.
+Customise the `pull-request` skill so it matches how THIS repository actually works, learned from its own history rather than assumed defaults.
 
 1. Gather evidence of the repo's conventions:
    - **Past PRs** — `gh pr list --state merged --limit 50 --json number,title,headRefName,body`. Infer PR-title patterns (Conventional Commits, ticket prefixes like `[ABC-123]`, sentence vs lower case), branch-name patterns (prefixes, separators, casing), and PR-body structure (required sections, checklists).
@@ -66,8 +66,8 @@ Customise the `pr` skill so it matches how THIS repository actually works, learn
    - **Repo settings** — `gh repo view --json defaultBranchRef,mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed` for the default branch and allowed merge methods.
 2. Synthesise a concise convention profile: branch-name rules, commit-message rules, PR-title rules, PR-body/template rules, and any release-automation constraints. Prefer the dominant observed pattern; where history is sparse or inconsistent, fall back to the general Conventional Commits defaults and say so explicitly.
 3. Present the inferred profile to the user for confirmation or edits. Do not rewrite the skill without confirmation.
-4. On confirmation, rewrite ONLY the "Repository conventions" block of `.github/skills/pr/SKILL.md` — the text between the `<!-- CONVENTIONS:START -->` and `<!-- CONVENTIONS:END -->` markers — with the confirmed profile. Leave the rest of the skill untouched.
-5. Report the resolved convention profile and confirm the `pr` skill was updated.
+4. On confirmation, rewrite ONLY the "Repository conventions" block of `.github/skills/pull-request/SKILL.md` — the text between the `<!-- CONVENTIONS:START -->` and `<!-- CONVENTIONS:END -->` markers — with the confirmed profile. Leave the rest of the skill untouched.
+5. Report the resolved convention profile and confirm the `pull-request` skill was updated.
 
 ## Guardrails
 - Never commit or push — you edit agent and skill files and MCP config; the user commits.

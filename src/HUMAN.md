@@ -29,5 +29,5 @@ Once the files are written:
 1. **`/planner`** — Give a basic outline of what you want to build. The agent asks clarifying questions and iterates until it has a complete plan for the feature, bugfix, or chore.
 2. **`/clear`** — Clear the context window.
 3. **`/implement`** — Paste the path to the plan that was created, e.g. `documents/plans/20260101-plan.md`.
-4. **`/pr`** — Open a pull request with Conventional Commit messages so the release-please workflow can cut a release once merged.
+4. **`/pull-request`** — Open a pull request with Conventional Commit messages so the release-please workflow can cut a release once merged.
 5. **`/watch-ci`** — Paste the PR or GitHub Actions run. It watches the build to make sure everything passes, fixing bugs in real time if needed.

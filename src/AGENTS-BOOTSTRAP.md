@@ -349,8 +349,8 @@ At the start of every session, verify `.claude/skills/` contains a directory for
 | watch-ci | `.claude/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-claude` → `triage-claude` → `investigate-claude` → `code-claude`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.claude/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-claude` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-claude` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.claude/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits or pushes. |
-| initialize | `.claude/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; scan past PRs, branch names, and commit history to customise the `pr` skill's convention profile; then verify every agent's configured model exists in Claude Code and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
-| pr | `.claude/skills/pr/SKILL.md` | Open a pull request that follows this repository's branch-name, commit-message, and PR title/body conventions (defaulting to Conventional Commits): verify the branch, check/repair the branch and commit subjects, push, and open the PR with `gh`. Customised by the `initialize` skill from the repo's history. Never merges. |
+| initialize | `.claude/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; scan past PRs, branch names, and commit history to customise the `pull-request` skill's convention profile; then verify every agent's configured model exists in Claude Code and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
+| pull-request | `.claude/skills/pull-request/SKILL.md` | Open a pull request that follows this repository's branch-name, commit-message, and PR title/body conventions (defaulting to Conventional Commits): verify the branch, check/repair the branch and commit subjects, push, and open the PR with `gh`. Customised by the `initialize` skill from the repo's history. Never merges. |
 
 ---
 
@@ -506,7 +506,7 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; scans past PRs, branch names, and commit history and, after user confirmation, customises the `pr` skill's convention profile; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; scans past PRs, branch names, and commit history and, after user confirmation, customises the `pull-request` skill's convention profile; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
 ---
 
 You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in the phases below. This skill only edits agent and skill files, the tool's instruction entry-point, and MCP config; it never touches source code and never commits.
@@ -561,7 +561,7 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 
 ## Phase 4 — PR & contribution convention discovery
 
-Customise the `pr` skill so it matches how THIS repository actually works, learned from its own history rather than assumed defaults.
+Customise the `pull-request` skill so it matches how THIS repository actually works, learned from its own history rather than assumed defaults.
 
 1. Gather evidence of the repo's conventions:
    - **Past PRs** — `gh pr list --state merged --limit 50 --json number,title,headRefName,body`. Infer PR-title patterns (Conventional Commits, ticket prefixes like `[ABC-123]`, sentence vs lower case), branch-name patterns (prefixes, separators, casing), and PR-body structure (required sections, checklists).
@@ -570,8 +570,8 @@ Customise the `pr` skill so it matches how THIS repository actually works, learn
    - **Repo settings** — `gh repo view --json defaultBranchRef,mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed` for the default branch and allowed merge methods.
 2. Synthesise a concise convention profile: branch-name rules, commit-message rules, PR-title rules, PR-body/template rules, and any release-automation constraints. Prefer the dominant observed pattern; where history is sparse or inconsistent, fall back to the general Conventional Commits defaults and say so explicitly.
 3. Present the inferred profile to the user for confirmation or edits. Do not rewrite the skill without confirmation.
-4. On confirmation, rewrite ONLY the "Repository conventions" block of `.claude/skills/pr/SKILL.md` — the text between the `<!-- CONVENTIONS:START -->` and `<!-- CONVENTIONS:END -->` markers — with the confirmed profile. Leave the rest of the skill untouched.
-5. Report the resolved convention profile and confirm the `pr` skill was updated.
+4. On confirmation, rewrite ONLY the "Repository conventions" block of `.claude/skills/pull-request/SKILL.md` — the text between the `<!-- CONVENTIONS:START -->` and `<!-- CONVENTIONS:END -->` markers — with the confirmed profile. Leave the rest of the skill untouched.
+5. Report the resolved convention profile and confirm the `pull-request` skill was updated.
 
 ## Guardrails
 - Never commit or push — you edit agent and skill files and MCP config; the user commits.
@@ -584,14 +584,14 @@ Customise the `pr` skill so it matches how THIS repository actually works, learn
 
 ---
 
-### `.claude/skills/pr/SKILL.md`
+### `.claude/skills/pull-request/SKILL.md`
 ```
 ---
-name: pr
+name: pull-request
 description: Open a pull request that follows this repository's conventions for branch names, commit messages, and PR titles and bodies. Verifies you are on a working branch, checks and repairs the branch/commits/title against the active convention profile, pushes, and opens the PR with the GitHub CLI. Never merges the PR.
 ---
 
-You are the pr orchestrator. Open a pull request that conforms to this repository's contribution conventions, then hand off to the user to merge. Never merge the PR yourself and never push to the default branch.
+You are the pull-request orchestrator. Open a pull request that conforms to this repository's contribution conventions, then hand off to the user to merge. Never merge the PR yourself and never push to the default branch.
 
 ## Convention profile
 
@@ -1007,8 +1007,8 @@ At the start of every session, verify `.github/skills/` contains a directory for
 | watch-ci | `.github/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-copilot` → `triage-copilot` → `investigate-copilot` → `code-copilot`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.github/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-copilot` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-copilot` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.github/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits. |
-| initialize | `.github/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; scan past PRs, branch names, and commit history to customise the `pr` skill's convention profile; then verify every agent's configured model exists in Copilot CLI and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
-| pr | `.github/skills/pr/SKILL.md` | Open a pull request that follows this repository's branch-name, commit-message, and PR title/body conventions (defaulting to Conventional Commits): verify the branch, check/repair the branch and commit subjects, push, and open the PR with `gh`. Customised by the `initialize` skill from the repo's history. Never merges. |
+| initialize | `.github/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; scan past PRs, branch names, and commit history to customise the `pull-request` skill's convention profile; then verify every agent's configured model exists in Copilot CLI and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
+| pull-request | `.github/skills/pull-request/SKILL.md` | Open a pull request that follows this repository's branch-name, commit-message, and PR title/body conventions (defaulting to Conventional Commits): verify the branch, check/repair the branch and commit subjects, push, and open the PR with `gh`. Customised by the `initialize` skill from the repo's history. Never merges. |
 
 ---
 
@@ -1158,7 +1158,7 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; scans past PRs, branch names, and commit history and, after user confirmation, customises the `pr` skill's convention profile; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; scans past PRs, branch names, and commit history and, after user confirmation, customises the `pull-request` skill's convention profile; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
 ---
 
 You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in the phases below. This skill only edits agent and skill files, the tool's instruction entry-point, and MCP config; it never touches source code and never commits.
@@ -1215,7 +1215,7 @@ Role-specific override: `infra-copilot` uses `gpt-5.4`.
 
 ## Phase 4 — PR & contribution convention discovery
 
-Customise the `pr` skill so it matches how THIS repository actually works, learned from its own history rather than assumed defaults.
+Customise the `pull-request` skill so it matches how THIS repository actually works, learned from its own history rather than assumed defaults.
 
 1. Gather evidence of the repo's conventions:
    - **Past PRs** — `gh pr list --state merged --limit 50 --json number,title,headRefName,body`. Infer PR-title patterns (Conventional Commits, ticket prefixes like `[ABC-123]`, sentence vs lower case), branch-name patterns (prefixes, separators, casing), and PR-body structure (required sections, checklists).
@@ -1224,8 +1224,8 @@ Customise the `pr` skill so it matches how THIS repository actually works, learn
    - **Repo settings** — `gh repo view --json defaultBranchRef,mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed` for the default branch and allowed merge methods.
 2. Synthesise a concise convention profile: branch-name rules, commit-message rules, PR-title rules, PR-body/template rules, and any release-automation constraints. Prefer the dominant observed pattern; where history is sparse or inconsistent, fall back to the general Conventional Commits defaults and say so explicitly.
 3. Present the inferred profile to the user for confirmation or edits. Do not rewrite the skill without confirmation.
-4. On confirmation, rewrite ONLY the "Repository conventions" block of `.github/skills/pr/SKILL.md` — the text between the `<!-- CONVENTIONS:START -->` and `<!-- CONVENTIONS:END -->` markers — with the confirmed profile. Leave the rest of the skill untouched.
-5. Report the resolved convention profile and confirm the `pr` skill was updated.
+4. On confirmation, rewrite ONLY the "Repository conventions" block of `.github/skills/pull-request/SKILL.md` — the text between the `<!-- CONVENTIONS:START -->` and `<!-- CONVENTIONS:END -->` markers — with the confirmed profile. Leave the rest of the skill untouched.
+5. Report the resolved convention profile and confirm the `pull-request` skill was updated.
 
 ## Guardrails
 - Never commit or push — you edit agent and skill files and MCP config; the user commits.
@@ -1238,14 +1238,14 @@ Customise the `pr` skill so it matches how THIS repository actually works, learn
 
 ---
 
-### `.github/skills/pr/SKILL.md`
+### `.github/skills/pull-request/SKILL.md`
 ```
 ---
-name: pr
+name: pull-request
 description: Open a pull request that follows this repository's conventions for branch names, commit messages, and PR titles and bodies. Verifies you are on a working branch, checks and repairs the branch/commits/title against the active convention profile, pushes, and opens the PR with the GitHub CLI. Never merges the PR.
 ---
 
-You are the pr orchestrator. Open a pull request that conforms to this repository's contribution conventions, then hand off to the user to merge. Never merge the PR yourself and never push to the default branch.
+You are the pull-request orchestrator. Open a pull request that conforms to this repository's contribution conventions, then hand off to the user to merge. Never merge the PR yourself and never push to the default branch.
 
 ## Convention profile
 
@@ -1668,8 +1668,8 @@ At the start of every session, verify `.agents/skills/` contains a directory for
 | watch-ci | `.agents/skills/watch-ci/SKILL.md` | Watch a GitHub Actions workflow (current-branch PR, or a pasted PR / workflow-run / workflow-file URL), auto-fix failures via `log-reader-codex` -> `triage-codex` -> `investigate-codex` -> `code-codex`, and re-trigger based on the workflow's `on:` triggers until green. |
 | planner | `.agents/skills/planner/SKILL.md` | Formalise the two-stage planning flow: run `planner-discovery-codex` (Stage 1 outline + clarifying questions), gate on user approval, then run `planner-codex` (Stage 2 full plan written to `documents/plans/`). Never implements. |
 | implement | `.agents/skills/implement/SKILL.md` | Execute an existing plan from `documents/plans/` (path passed by the user), dispatching each phase to the agent the plan designates and using the branch the plan names. Never commits or pushes. |
-| initialize | `.agents/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; scan past PRs, branch names, and commit history to customise the `pr` skill's convention profile; then verify every agent's configured model exists in Codex and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
-| pr | `.agents/skills/pr/SKILL.md` | Open a pull request that follows this repository's branch-name, commit-message, and PR title/body conventions (defaulting to Conventional Commits): verify the branch, check/repair the branch and commit subjects, push, and open the PR with `gh`. Customised by the `initialize` skill from the repo's history. Never merges. |
+| initialize | `.agents/skills/initialize/SKILL.md` | One-time environment reconciliation: discover applicable MCP servers and (with user approval) install and wire them into the infra/planner agents; discover where plan documents actually live and (after user confirmation) wire the planner/implement/docs agents to that location; scan past PRs, branch names, and commit history to customise the `pull-request` skill's convention profile; then verify every agent's configured model exists in Codex and always prompt the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when unavailable) and rewrite the agent files. Never commits. |
+| pull-request | `.agents/skills/pull-request/SKILL.md` | Open a pull request that follows this repository's branch-name, commit-message, and PR title/body conventions (defaulting to Conventional Commits): verify the branch, check/repair the branch and commit subjects, push, and open the PR with `gh`. Customised by the `initialize` skill from the repo's history. Never merges. |
 
 ---
 
@@ -1825,7 +1825,7 @@ For each phase in order:
 ```
 ---
 name: initialize
-description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; scans past PRs, branch names, and commit history and, after user confirmation, customises the `pr` skill's convention profile; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
+description: One-time environment reconciliation. First wires this tool's instruction file to the shipped MARCOS-AI-BOOTSTRAP.md rules (appending an @-include, never overwriting; creating the file if absent). Discovers applicable MCP servers and, with user approval, installs and wires them into the infra/planner agents; discovers where plan documents actually live and, after user confirmation, wires the planner/implement/docs agents to that location; scans past PRs, branch names, and commit history and, after user confirmation, customises the `pull-request` skill's convention profile; then always prompts the user to choose the model for each tier/role (pre-selecting the current model, or the closest available match when it is unavailable) and rewrites the agent files. Never commits.
 ---
 
 You are the initialize orchestrator. Reconcile this repo's agent network with the current environment in the phases below. This skill only edits agent and skill files, the tool's instruction entry-point, and MCP config; it never touches source code and never commits.
@@ -1880,7 +1880,7 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 
 ## Phase 4 - PR & contribution convention discovery
 
-Customise the `pr` skill so it matches how THIS repository actually works, learned from its own history rather than assumed defaults.
+Customise the `pull-request` skill so it matches how THIS repository actually works, learned from its own history rather than assumed defaults.
 
 1. Gather evidence of the repo's conventions:
    - **Past PRs** - `gh pr list --state merged --limit 50 --json number,title,headRefName,body`. Infer PR-title patterns (Conventional Commits, ticket prefixes like `[ABC-123]`, sentence vs lower case), branch-name patterns (prefixes, separators, casing), and PR-body structure (required sections, checklists).
@@ -1889,8 +1889,8 @@ Customise the `pr` skill so it matches how THIS repository actually works, learn
    - **Repo settings** - `gh repo view --json defaultBranchRef,mergeCommitAllowed,squashMergeAllowed,rebaseMergeAllowed` for the default branch and allowed merge methods.
 2. Synthesise a concise convention profile: branch-name rules, commit-message rules, PR-title rules, PR-body/template rules, and any release-automation constraints. Prefer the dominant observed pattern; where history is sparse or inconsistent, fall back to the general Conventional Commits defaults and say so explicitly.
 3. Present the inferred profile to the user for confirmation or edits. Do not rewrite the skill without confirmation.
-4. On confirmation, rewrite ONLY the "Repository conventions" block of `.agents/skills/pr/SKILL.md` - the text between the `<!-- CONVENTIONS:START -->` and `<!-- CONVENTIONS:END -->` markers - with the confirmed profile. Leave the rest of the skill untouched.
-5. Report the resolved convention profile and confirm the `pr` skill was updated.
+4. On confirmation, rewrite ONLY the "Repository conventions" block of `.agents/skills/pull-request/SKILL.md` - the text between the `<!-- CONVENTIONS:START -->` and `<!-- CONVENTIONS:END -->` markers - with the confirmed profile. Leave the rest of the skill untouched.
+5. Report the resolved convention profile and confirm the `pull-request` skill was updated.
 
 ## Guardrails
 - Never commit or push - you edit agent and skill files and MCP config; the user commits.
@@ -1903,14 +1903,14 @@ Customise the `pr` skill so it matches how THIS repository actually works, learn
 
 ---
 
-### `.agents/skills/pr/SKILL.md`
+### `.agents/skills/pull-request/SKILL.md`
 ```
 ---
-name: pr
+name: pull-request
 description: Open a pull request that follows this repository's conventions for branch names, commit messages, and PR titles and bodies. Verifies you are on a working branch, checks and repairs the branch/commits/title against the active convention profile, pushes, and opens the PR with the GitHub CLI. Never merges the PR.
 ---
 
-You are the pr orchestrator. Open a pull request that conforms to this repository's contribution conventions, then hand off to the user to merge. Never merge the PR yourself and never push to the default branch.
+You are the pull-request orchestrator. Open a pull request that conforms to this repository's contribution conventions, then hand off to the user to merge. Never merge the PR yourself and never push to the default branch.
 
 ## Convention profile
 
