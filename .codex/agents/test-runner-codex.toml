@@ -1,6 +1,6 @@
 name = "test-runner-codex"
 description = "Use to run tests, interpret failures, fix broken tests, and add regression tests for bug fixes. Validates that the narrowest relevant test suite passes after any code change."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "low"
 developer_instructions = """
 

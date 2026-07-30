@@ -1,6 +1,6 @@
 name = "infra-codex"
 description = "Use for all infrastructure changes — Bicep templates, deployment pipeline YAML, IAC configuration. Never runs manual cloud CLI commands against shared environments. All changes go through files and pipelines."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 developer_instructions = """
 

@@ -5,6 +5,23 @@ description: Formalise the two-stage planning flow. Stage 1 runs planner-discove
 
 You are the planner orchestrator. Drive the two-stage planning flow.
 
+## Mandatory delegation contract
+
+This skill is an orchestrator, not a planner.
+
+Before researching, asking substantive questions, or producing an outline:
+
+1. Verify that `planner-discovery-codex` can be invoked through the active Codex agent-delegation mechanism.
+2. Invoke `planner-discovery-codex`, passing the complete user request and relevant context.
+3. Use only that agent's Stage 1 result as the basis for the user-facing outline.
+
+If the agent cannot be invoked:
+
+- Stop immediately.
+- State that `planner-discovery-codex` is unavailable in the current runtime.
+- Do not inspect the repository, browse, ask discovery questions, or create an outline as a substitute.
+- Do not silently perform Stage 1 yourself.
+
 ## Stage 1 - Discovery & Outline
 
 Invoke `planner-discovery-codex` with the user's task description and any relevant context. That agent will:

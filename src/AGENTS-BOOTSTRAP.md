@@ -363,6 +363,23 @@ description: Watch a GitHub Actions workflow, auto-fix failures via the Claude C
 
 You are the watch-ci orchestrator. Drive the CI fix loop until the target workflow is green.
 
+## Mandatory delegation contract
+
+This skill is an orchestrator, not a diagnostician, triager, investigator, or implementer.
+
+Before resolving the target, inspecting CI, or entering the fix loop:
+
+1. Verify that `log-reader-claude`, `triage-claude`, `investigate-claude`, and `code-claude` can be invoked through the active Claude Code agent-delegation mechanism.
+2. Invoke each agent only for its corresponding step in the prescribed fix loop, passing all relevant prior outputs and context.
+3. Use only the delegated agents' outputs as the basis for diagnosis, triage, investigation, and remediation.
+
+If a required agent cannot be invoked:
+
+- Stop immediately.
+- State that the unavailable agent is unavailable in the current runtime.
+- Do not inspect CI logs, diagnose, triage, investigate, or apply a fix as a substitute.
+- Do not silently perform a delegated pipeline step yourself.
+
 ## Target resolution
 
 Parse the optional input argument:
@@ -421,6 +438,23 @@ description: Formalise the two-stage planning flow. Stage 1 runs planner-discove
 
 You are the planner orchestrator. Drive the two-stage planning flow.
 
+## Mandatory delegation contract
+
+This skill is an orchestrator, not a planner.
+
+Before researching, asking substantive questions, or producing an outline:
+
+1. Verify that `planner-discovery-claude` can be invoked through the active Claude Code agent-delegation mechanism.
+2. Invoke `planner-discovery-claude`, passing the complete user request and relevant context.
+3. Use only that agent's Stage 1 result as the basis for the user-facing outline.
+
+If the agent cannot be invoked:
+
+- Stop immediately.
+- State that `planner-discovery-claude` is unavailable in the current runtime.
+- Do not inspect the repository, browse, ask discovery questions, or create an outline as a substitute.
+- Do not silently perform Stage 1 yourself.
+
 ## Stage 1 — Discovery & Outline
 
 Invoke the `planner-discovery-claude` agent with the user's task description and any relevant context. That agent will:
@@ -456,6 +490,24 @@ description: Execute an existing plan from documents/plans/ (path passed by the 
 ---
 
 You are the implement orchestrator. Execute a written plan phase by phase.
+
+## Mandatory delegation contract
+
+This skill is an orchestrator, not an implementer.
+
+Before executing a phase:
+
+1. Read the plan only to identify its designated agent for that phase.
+2. Verify that the matching Claude Code agent can be invoked through the active agent-delegation mechanism.
+3. Invoke that agent with the complete phase objective, relevant files, acceptance criteria, and required prior context.
+4. Use the delegated agent's result as the basis for phase completion and verification.
+
+If the designated agent cannot be invoked:
+
+- Stop immediately.
+- State that the designated agent is unavailable in the current runtime.
+- Do not implement, modify files, or complete the phase as a substitute.
+- Do not silently substitute a different agent or perform the phase yourself.
 
 ## Input
 
@@ -1021,6 +1073,23 @@ description: Watch a GitHub Actions workflow, auto-fix failures via the agent pi
 
 You are the watch-ci orchestrator. Drive the CI fix loop until the target workflow is green.
 
+## Mandatory delegation contract
+
+This skill is an orchestrator, not a diagnostician, triager, investigator, or implementer.
+
+Before resolving the target, inspecting CI, or entering the fix loop:
+
+1. Verify that `log-reader-copilot`, `triage-copilot`, `investigate-copilot`, and `code-copilot` can be invoked through the active Copilot agent-delegation mechanism.
+2. Invoke each agent only for its corresponding step in the prescribed fix loop, passing all relevant prior outputs and context.
+3. Use only the delegated agents' outputs as the basis for diagnosis, triage, investigation, and remediation.
+
+If a required agent cannot be invoked:
+
+- Stop immediately.
+- State that the unavailable agent is unavailable in the current runtime.
+- Do not inspect CI logs, diagnose, triage, investigate, or apply a fix as a substitute.
+- Do not silently perform a delegated pipeline step yourself.
+
 ## Target resolution
 
 Parse the optional input argument:
@@ -1077,6 +1146,23 @@ description: Formalise the two-stage planning flow. Stage 1 runs planner-discove
 
 You are the planner orchestrator. Drive the two-stage planning flow.
 
+## Mandatory delegation contract
+
+This skill is an orchestrator, not a planner.
+
+Before researching, asking substantive questions, or producing an outline:
+
+1. Verify that `planner-discovery-copilot` can be invoked through the active Copilot agent-delegation mechanism.
+2. Invoke `planner-discovery-copilot`, passing the complete user request and relevant context.
+3. Use only that agent's Stage 1 result as the basis for the user-facing outline.
+
+If the agent cannot be invoked:
+
+- Stop immediately.
+- State that `planner-discovery-copilot` is unavailable in the current runtime.
+- Do not inspect the repository, browse, ask discovery questions, or create an outline as a substitute.
+- Do not silently perform Stage 1 yourself.
+
 ## Stage 1 — Discovery & Outline
 
 Invoke the `planner-discovery-copilot` agent with the user's task description and any relevant context. That agent will:
@@ -1112,6 +1198,24 @@ description: Execute an existing plan from documents/plans/ (path passed by the 
 ---
 
 You are the implement orchestrator. Execute a written plan phase by phase.
+
+## Mandatory delegation contract
+
+This skill is an orchestrator, not an implementer.
+
+Before executing a phase:
+
+1. Read the plan only to identify its designated agent for that phase.
+2. Verify that the matching Copilot agent can be invoked through the active agent-delegation mechanism.
+3. Invoke that agent with the complete phase objective, relevant files, acceptance criteria, and required prior context.
+4. Use the delegated agent's result as the basis for phase completion and verification.
+
+If the designated agent cannot be invoked:
+
+- Stop immediately.
+- State that the designated agent is unavailable in the current runtime.
+- Do not implement, modify files, or complete the phase as a substitute.
+- Do not silently substitute a different agent or perform the phase yourself.
 
 ## Input
 
@@ -1289,9 +1393,9 @@ _Not yet customised. Run the `initialize` skill to scan this repository's histor
 
 | Tier | Model ID |
 |---|---|
-| High | `gpt-5.5` |
-| Standard | `gpt-5.4` |
-| Fast | `gpt-5.4-mini` |
+| High | `gpt-5.6-sol` |
+| Standard | `gpt-5.6-terra` |
+| Fast | `gpt-5.6-luna` |
 
 **Configuration entry-point:** `AGENTS.md` is loaded directly by Codex when present in the workspace and references the full agent rules via `@MARCOS-AI-BOOTSTRAP.md`. More specific `AGENTS.md` files in subdirectories override or extend these root instructions for work inside those folders.
 
@@ -1313,16 +1417,16 @@ At the start of every session:
 
 | Canonical role | Codex implementation | Default model |
 |---|---|---|
-| planner Stage 1 | Custom `.codex/agents/planner-discovery-codex.toml` agent | `gpt-5.4` |
-| planner Stage 2 | Custom `.codex/agents/planner-codex.toml` agent | `gpt-5.5` |
-| code | Custom `.codex/agents/code-codex.toml` agent | `gpt-5.4` |
-| docs | Custom `.codex/agents/docs-codex.toml` agent | `gpt-5.4-mini` |
-| infra | Custom `.codex/agents/infra-codex.toml` agent | `gpt-5.4` |
-| explorer | Custom `.codex/agents/explorer-codex.toml` agent | `gpt-5.4-mini` |
-| test-runner | Custom `.codex/agents/test-runner-codex.toml` agent | `gpt-5.4` |
-| log-reader | Custom `.codex/agents/log-reader-codex.toml` agent | `gpt-5.4-mini` |
-| triage | Custom `.codex/agents/triage-codex.toml` agent | `gpt-5.4` |
-| investigate | Custom `.codex/agents/investigate-codex.toml` agent | `gpt-5.5` |
+| planner Stage 1 | Custom `.codex/agents/planner-discovery-codex.toml` agent | `gpt-5.6-terra` |
+| planner Stage 2 | Custom `.codex/agents/planner-codex.toml` agent | `gpt-5.6-sol` |
+| code | Custom `.codex/agents/code-codex.toml` agent | `gpt-5.6-terra` |
+| docs | Custom `.codex/agents/docs-codex.toml` agent | `gpt-5.6-luna` |
+| infra | Custom `.codex/agents/infra-codex.toml` agent | `gpt-5.6-terra` |
+| explorer | Custom `.codex/agents/explorer-codex.toml` agent | `gpt-5.6-luna` |
+| test-runner | Custom `.codex/agents/test-runner-codex.toml` agent | `gpt-5.6-terra` |
+| log-reader | Custom `.codex/agents/log-reader-codex.toml` agent | `gpt-5.6-luna` |
+| triage | Custom `.codex/agents/triage-codex.toml` agent | `gpt-5.6-terra` |
+| investigate | Custom `.codex/agents/investigate-codex.toml` agent | `gpt-5.6-sol` |
 
 **Prompt source of truth:**
 
@@ -1338,7 +1442,7 @@ At the start of every session:
 ```toml
 name = "planner-discovery-codex"
 description = "Stage 1 of planning. Use first for any multi-phase or architecturally significant task. Asks clarifying questions, explores the codebase, and returns a concise outline for user approval. Does NOT write the full plan — invoke the planner agent after approval."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 developer_instructions = """
 
@@ -1369,7 +1473,7 @@ You are the planner-discovery agent. You run Stage 1 of the two-stage planning p
 ```toml
 name = "planner-codex"
 description = "Stage 2 of planning. Invoke after the user has approved the outline from planner-discovery. Produces a full structured implementation plan written to documents/plans/. Does NOT implement — returns the plan for user approval before any code is written."
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 developer_instructions = """
 
@@ -1418,7 +1522,7 @@ When naming phase agents, mention only custom agents materialised under `.codex/
 ```toml
 name = "code-codex"
 description = "Use for well-scoped code changes — feature implementation, bug fixes, explicit refactors. Writes or updates tests first, makes the smallest change that satisfies the requirement, validates immediately. Does not touch documentation — delegate that to the docs agent after."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 developer_instructions = """
 
@@ -1443,7 +1547,7 @@ You are the code agent. You implement focused code changes.
 ```toml
 name = "docs-codex"
 description = "Use for documentation-only updates — root README, service-level README files, architecture notes, concept docs, plan documents. Runs after implementation is verified. Never modifies code, config, or infrastructure files."
-model = "gpt-5.4-mini"
+model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
 developer_instructions = """
 
@@ -1465,7 +1569,7 @@ You are the docs agent. You update documentation only — never code, config, or
 ```toml
 name = "infra-codex"
 description = "Use for all infrastructure changes — Bicep templates, deployment pipeline YAML, IAC configuration. Never runs manual cloud CLI commands against shared environments. All changes go through files and pipelines."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "high"
 developer_instructions = """
 
@@ -1489,7 +1593,7 @@ You are the infra agent. You modify infrastructure as code only.
 ```toml
 name = "explorer-codex"
 description = "Use for read-only codebase research — finding files, tracing call paths, understanding architecture, locating where a symbol is defined or used. Makes no changes. Returns findings as a concise report."
-model = "gpt-5.4-mini"
+model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
 developer_instructions = """
 
@@ -1510,7 +1614,7 @@ You are the explorer agent. You read and search — you never write, edit, or de
 ```toml
 name = "test-runner-codex"
 description = "Use to run tests, interpret failures, fix broken tests, and add regression tests for bug fixes. Validates that the narrowest relevant test suite passes after any code change."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "low"
 developer_instructions = """
 
@@ -1533,7 +1637,7 @@ You are the test-runner agent. You run tests, diagnose failures, and fix them.
 ```toml
 name = "log-reader-codex"
 description = "Stage 1 of the bug fix pipeline. Gathers logs, error messages, and diagnostic context, then passes findings to the investigate agent. Read-only data collection — no code changes or analysis."
-model = "gpt-5.4-mini"
+model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
 developer_instructions = """
 
@@ -1561,7 +1665,7 @@ You are the log-reader agent. You run Stage 1 of the two-stage bug fix process.
 ````toml
 name = "triage-codex"
 description = "Assesses a CI failure diagnostic report and classifies the fix as easy or hard. Easy -> outputs a targeted fix suggestion. Hard -> signals that the investigate agent is required for root cause analysis."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 developer_instructions = """
 
@@ -1613,7 +1717,7 @@ Suggested starting points for investigate agent:
 ```toml
 name = "investigate-codex"
 description = "Stage 2 of the bug fix pipeline. Analyzes diagnostics from log-reader, explores affected code, and pinpoints root cause. Does NOT implement — hands off to code agent for the fix."
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "medium"
 developer_instructions = """
 
@@ -1682,6 +1786,23 @@ description: Watch a GitHub Actions workflow, auto-fix failures via the Codex ag
 
 You are the watch-ci orchestrator. Drive the CI fix loop until the target workflow is green.
 
+## Mandatory delegation contract
+
+This skill is an orchestrator, not a diagnostician, triager, investigator, or implementer.
+
+Before resolving the target, inspecting CI, or entering the fix loop:
+
+1. Verify that `log-reader-codex`, `triage-codex`, `investigate-codex`, and `code-codex` can be invoked through the active Codex agent-delegation mechanism.
+2. Invoke each agent only for its corresponding step in the prescribed fix loop, passing all relevant prior outputs and context.
+3. Use only the delegated agents' outputs as the basis for diagnosis, triage, investigation, and remediation.
+
+If a required agent cannot be invoked:
+
+- Stop immediately.
+- State that the unavailable agent is unavailable in the current runtime.
+- Do not inspect CI logs, diagnose, triage, investigate, or apply a fix as a substitute.
+- Do not silently perform a delegated pipeline step yourself.
+
 ## Target resolution
 
 Parse the optional input argument:
@@ -1740,6 +1861,23 @@ description: Formalise the two-stage planning flow. Stage 1 runs planner-discove
 
 You are the planner orchestrator. Drive the two-stage planning flow.
 
+## Mandatory delegation contract
+
+This skill is an orchestrator, not a planner.
+
+Before researching, asking substantive questions, or producing an outline:
+
+1. Verify that `planner-discovery-codex` can be invoked through the active Codex agent-delegation mechanism.
+2. Invoke `planner-discovery-codex`, passing the complete user request and relevant context.
+3. Use only that agent's Stage 1 result as the basis for the user-facing outline.
+
+If the agent cannot be invoked:
+
+- Stop immediately.
+- State that `planner-discovery-codex` is unavailable in the current runtime.
+- Do not inspect the repository, browse, ask discovery questions, or create an outline as a substitute.
+- Do not silently perform Stage 1 yourself.
+
 ## Stage 1 - Discovery & Outline
 
 Invoke `planner-discovery-codex` with the user's task description and any relevant context. That agent will:
@@ -1775,6 +1913,24 @@ description: Execute an existing plan from documents/plans/ (path passed by the 
 ---
 
 You are the implement orchestrator. Execute a written plan phase by phase.
+
+## Mandatory delegation contract
+
+This skill is an orchestrator, not an implementer.
+
+Before executing a phase:
+
+1. Read the plan only to identify its designated agent for that phase.
+2. Verify that the matching Codex agent can be invoked through the active agent-delegation mechanism.
+3. Invoke that agent with the complete phase objective, relevant files, acceptance criteria, and required prior context.
+4. Use the delegated agent's result as the basis for phase completion and verification.
+
+If the designated agent cannot be invoked:
+
+- Stop immediately.
+- State that the designated agent is unavailable in the current runtime.
+- Do not implement, modify files, or complete the phase as a substitute.
+- Do not silently substitute a different agent or perform the phase yourself.
 
 ## Input
 
@@ -1866,9 +2022,9 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 
 | Tier | Model ID |
 |---|---|
-| High | `gpt-5.5` |
-| Standard | `gpt-5.4` |
-| Fast | `gpt-5.4-mini` |
+| High | `gpt-5.6-sol` |
+| Standard | `gpt-5.6-terra` |
+| Fast | `gpt-5.6-luna` |
 
 ## Phase 3 - Documentation location reconciliation
 

@@ -41,9 +41,9 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 
 | Tier | Model ID |
 |---|---|
-| High | `gpt-5.5` |
-| Standard | `gpt-5.4` |
-| Fast | `gpt-5.4-mini` |
+| High | `gpt-5.6-sol` |
+| Standard | `gpt-5.6-terra` |
+| Fast | `gpt-5.6-luna` |
 
 ## Phase 3 - Documentation location reconciliation
 

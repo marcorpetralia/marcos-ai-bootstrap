@@ -78,6 +78,20 @@ Before submitting a PR with rule changes, sanity-check the regeneration:
 node src/bin/ai-bootstrap.js --all --dry-run --dest /tmp/aib-check
 ```
 
+### Skills that delegate to agents
+
+Skills that invoke agents are **orchestrators**. They must not silently take over an agent's job when delegation is unavailable.
+
+For every tool materialisation (Claude Code, Copilot, and Codex), an agent-spawning skill must include a **Mandatory delegation contract** that:
+
+1. Names the tool-specific agent or agents it will invoke.
+2. Verifies that those agents can be invoked through the active tool's agent-delegation mechanism before it performs the delegated work.
+3. Passes the complete task, relevant context, prior outputs, and acceptance criteria to the delegated agent.
+4. Uses the delegated agent's output as the basis for the skill's next action or user-facing result.
+5. Stops immediately if a required agent is unavailable, clearly reports that condition, and does not inspect, plan, diagnose, implement, or otherwise substitute for the missing agent.
+
+Apply this rule to every new or changed skill that spins up agents. Keep the contract appropriate to the skill's role: for example, `planner` delegates Stage 1 to its discovery agent, `watch-ci` delegates each diagnostic and fix-pipeline stage, and `implement` delegates every plan phase to its designated agent.
+
 ### Full rules
 
 See [`MARCOS-AI-BOOTSTRAP.md`](./MARCOS-AI-BOOTSTRAP.md) for the complete agent rules, guardrails, MCP server discovery, and skill definitions.
