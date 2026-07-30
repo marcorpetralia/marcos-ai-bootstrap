@@ -1,6 +1,6 @@
 name = "planner-codex"
 description = "Stage 2 of planning. Invoke after the user has approved the outline from planner-discovery. Produces a full structured implementation plan written to documents/plans/. Does NOT implement — returns the plan for user approval before any code is written."
-model = "gpt-5.5"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 developer_instructions = """
 

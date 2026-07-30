@@ -1,6 +1,6 @@
 name = "triage-codex"
 description = "Assesses a CI failure diagnostic report and classifies the fix as easy or hard. Easy -> outputs a targeted fix suggestion. Hard -> signals that the investigate agent is required for root cause analysis."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 developer_instructions = """
 

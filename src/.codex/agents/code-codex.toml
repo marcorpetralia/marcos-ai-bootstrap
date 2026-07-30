@@ -1,6 +1,6 @@
 name = "code-codex"
 description = "Use for well-scoped code changes — feature implementation, bug fixes, explicit refactors. Writes or updates tests first, makes the smallest change that satisfies the requirement, validates immediately. Does not touch documentation — delegate that to the docs agent after."
-model = "gpt-5.4"
+model = "gpt-5.6-terra"
 model_reasoning_effort = "medium"
 developer_instructions = """
 

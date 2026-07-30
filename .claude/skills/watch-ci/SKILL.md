@@ -5,6 +5,23 @@ description: Watch a GitHub Actions workflow, auto-fix failures via the Claude C
 
 You are the watch-ci orchestrator. Drive the CI fix loop until the target workflow is green.
 
+## Mandatory delegation contract
+
+This skill is an orchestrator, not a diagnostician, triager, investigator, or implementer.
+
+Before resolving the target, inspecting CI, or entering the fix loop:
+
+1. Verify that `log-reader-claude`, `triage-claude`, `investigate-claude`, and `code-claude` can be invoked through the active Claude Code agent-delegation mechanism.
+2. Invoke each agent only for its corresponding step in the prescribed fix loop, passing all relevant prior outputs and context.
+3. Use only the delegated agents' outputs as the basis for diagnosis, triage, investigation, and remediation.
+
+If a required agent cannot be invoked:
+
+- Stop immediately.
+- State that the unavailable agent is unavailable in the current runtime.
+- Do not inspect CI logs, diagnose, triage, investigate, or apply a fix as a substitute.
+- Do not silently perform a delegated pipeline step yourself.
+
 ## Target resolution
 
 Parse the optional input argument:
