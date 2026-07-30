@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.9](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.8...marcos-ai-bootstrap-v0.1.9) (2026-07-30)
+
+
+### Features
+
+* harden delegated skill workflows ([1dad733](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/1dad733a839076e3b108b9a7d326f94427152742))
+* harden delegated skill workflows ([a74c98c](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/a74c98c9b0898f6c948e816dffd5f3c9c405737f))
+
 ## [0.1.8](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.7...marcos-ai-bootstrap-v0.1.8) (2026-07-28)
 
 
