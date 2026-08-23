@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.10](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.9...marcos-ai-bootstrap-v0.1.10) (2026-08-23)
+
+
+### Features
+
+* **agents:** tighten code/planner/implement rules and add --gitignore install mode ([1841f59](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/1841f59777e93c7ea2d7f92bc997b35ca3efe16a))
+* **agents:** tighten code/planner/implement rules and add --gitignore install mode ([1b3046a](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/1b3046ad88dc8c18be362b9da182cfbf542d4627))
+
 ## [0.1.9](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.8...marcos-ai-bootstrap-v0.1.9) (2026-07-30)
 
 
