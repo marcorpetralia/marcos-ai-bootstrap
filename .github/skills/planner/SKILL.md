@@ -35,7 +35,11 @@ Present the outline to the user. **Stop and explicitly ask for approval before p
 
 Only after the user approves the outline, invoke the `planner-copilot` agent with the approved outline and any answers the user provided to open questions. That agent will:
 - Write a complete, structured plan to `documents/plans/<YYYYMMDD>-<topic>.md`.
-- Plan structure: Goal, Constraints, Phases (objective / agent / files / acceptance criteria), Open questions, Risks.
+- Plan structure: Goal, Constraints, Phases (objective / agent(s) / files / tests / acceptance criteria), Open questions, Risks.
+- Keep phases small and tightly scoped; mark phases with no shared files or ordering dependency as parallelizable.
+- For phases that change code, specify the smallest set of tests the change needs.
+- State explicitly, per phase, that its agent(s) run only narrow/targeted tests — never the full suite. Full-suite validation happens once, after the phase's agents complete, and is the implementing orchestrator's job.
+- A phase may chain multiple agents in sequence (e.g. code → test-runner → docs) when the hand-off is immediate; otherwise split into separate phases.
 - Include code snippets for load-bearing changes.
 
 Present the written plan to the user. **Stop and ask for explicit approval before any implementation begins.**

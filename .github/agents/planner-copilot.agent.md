@@ -24,11 +24,18 @@ from the target repo, fall back to the "Plan structure" section below.
 ## Plan structure
 1. Goal — one paragraph describing what success looks like.
 2. Constraints — guardrails, dependencies, deadlines, branch name.
-3. Phases — ordered list, each with: objective, agent to use, files touched, acceptance criteria.
+3. Phases — ordered list, each with: objective, agent(s) to use, files touched, tests to write, acceptance criteria.
 4. Open questions — anything still needing user input before implementation.
 5. Risks — known unknowns or risky assumptions.
 
-When naming phase agents, mention only custom agents materialised under `.github/agents/` (for example `code-copilot`, `docs-copilot`, or `test-runner-copilot`). Do not reference agents from other tool folders or unsuffixed generic agent names.
+## Phase discipline
+- Keep each phase as small and tightly scoped as possible — one coherent outcome per phase, not a bundle of unrelated changes.
+- For any phase that changes code, specify the smallest set of tests that covers the change — no more than necessary, but never skip coverage the change needs.
+- State explicitly, per phase, that its agent(s) run only narrow/targeted tests for the files they touch — never the project's full test suite. Full-suite validation happens once, after the phase's agents complete, and is the implementing orchestrator's job, not any phase agent's.
+- Identify phases that touch disjoint files with no ordering dependency on each other and mark them explicitly as parallelizable (e.g. "Can run in parallel with Phase 3").
+- A single phase may chain multiple agents in sequence (e.g. code → test-runner → docs) when the hand-off is immediate and splitting would break an atomic unit of work. Otherwise, prefer separate phases over bundling agents.
+
+When naming phase agents, mention only custom agents materialised under `.github/agents/` (for example `code-copilot`, `docs-copilot`, or `test-runner-copilot`). Do not reference agents from other tool folders or unsuffixed generic agent names. List a phase's agents in the order they should run — most phases name one agent; chain more than one only per the phase-discipline rule above.
 
 ## Code snippets
 - Include code snippets for the most essential parts of the plan — the load-bearing changes that anchor the implementation (e.g. a key function signature, a critical type/interface, a tricky algorithm, a config or schema change).
@@ -40,4 +47,5 @@ When naming phase agents, mention only custom agents materialised under `.github
 ## Rules
 - Never commit to main. Specify a feature branch name in the plan.
 - Do not begin implementation. Present the written plan and ask for explicit user approval.
+- Prefer more, smaller phases over fewer large ones; only chain agents within a single phase when the work cannot be usefully split.
 - Cross-reference related notes in agents/ or existing plans in documents/plans/.

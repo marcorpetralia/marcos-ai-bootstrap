@@ -54,3 +54,53 @@ test("entry-point wiring is idempotent (AGENTS.md already-wired on re-run)", () 
     )
   );
 });
+
+test("--gitignore skips entry-point wiring and writes ignore patterns instead", () => {
+  const dest = mkTmp();
+  const { results } = materialize(["claude"], { destRoot: dest, gitignore: true });
+
+  assert.ok(
+    !results.some((r) => r.relPath === "AGENTS.md"),
+    "AGENTS.md must not be created or amended"
+  );
+  assert.ok(!fs.existsSync(path.join(dest, "AGENTS.md")));
+  assert.ok(!fs.existsSync(path.join(dest, "CLAUDE.md")));
+
+  const gitignoreResult = results.find((r) => r.relPath === ".gitignore");
+  assert.ok(gitignoreResult, ".gitignore result missing");
+  assert.equal(gitignoreResult.status, "created");
+
+  const contents = fs.readFileSync(path.join(dest, ".gitignore"), "utf8");
+  for (const expected of [
+    "MARCOS-AI-BOOTSTRAP.md",
+    "HUMAN.md",
+    "documents/templates/plan-template.md",
+    ".claude/agents/",
+    ".claude/skills/",
+  ]) {
+    assert.ok(contents.includes(expected), `.gitignore missing ${expected}`);
+  }
+});
+
+test("--gitignore is idempotent and extends existing .gitignore on re-run with more tools", () => {
+  const dest = mkTmp();
+  materialize(["claude"], { destRoot: dest, gitignore: true });
+  const second = materialize(["claude"], { destRoot: dest, gitignore: true });
+  assert.ok(
+    second.results.some(
+      (r) => r.relPath === ".gitignore" && r.status === "already-wired"
+    )
+  );
+
+  const third = materialize(["codex"], { destRoot: dest, gitignore: true });
+  assert.ok(
+    third.results.some((r) => r.relPath === ".gitignore" && r.status === "appended")
+  );
+  const contents = fs.readFileSync(path.join(dest, ".gitignore"), "utf8");
+  assert.ok(contents.includes(".codex/agents/"));
+  assert.equal(
+    contents.split("# Marcos AI-Bootstrap (materialised files)").length - 1,
+    1,
+    "marker heading must not be duplicated"
+  );
+});
