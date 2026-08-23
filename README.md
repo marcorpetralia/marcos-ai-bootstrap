@@ -52,11 +52,18 @@ The Stage-2 planner agents
 | `--dest <path>` | Target directory (default: current working directory) |
 | `--force` | Overwrite files that already exist (default: skip existing files) |
 | `--dry-run` | Print what would be written without touching disk |
+| `--gitignore` | Add the materialised agents/skills/templates to `.gitignore` instead of tracking them, and skip wiring any instruction entry-point (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) |
 | `-h`, `--help` | Show usage |
 
 Existing files are never clobbered unless you pass `--force`, so it's safe to re-run
 `marcos-ai-bootstrap` in a repo that already has some of the network materialised (e.g. to add
 `--codex` support to a repo that only had `--copilot` before).
+
+Pass `--gitignore` if you'd rather not commit the materialised network to your repo — useful for a
+personal/local setup, or when your team hasn't agreed to check it in yet. It appends the relevant
+paths under a `# Marcos AI-Bootstrap (materialised files)` heading in `.gitignore` (creating the
+file if absent, extending it on re-run without duplicating entries) and leaves your own
+`AGENTS.md`/`CLAUDE.md`/`.github/copilot-instructions.md` untouched.
 
 ### Installing globally instead of via `npx`
 

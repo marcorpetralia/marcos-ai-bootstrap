@@ -31,16 +31,27 @@ Options:
   --dest <path>     Target directory (default: current working directory)
   --force           Overwrite files that already exist (default: skip existing files)
   --dry-run         Show what would be written without writing anything
+  --gitignore       Add materialised agents/skills/templates to .gitignore instead
+                     of tracking them, and skip wiring any instruction entry-point
+                     (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md)
   -h, --help        Show this help text
 
 Examples:
   npx marcos-ai-bootstrap --copilot
   npx marcos-ai-bootstrap --claude --codex --dry-run
   npx marcos-ai-bootstrap --all --force
+  npx marcos-ai-bootstrap --all --gitignore
 `;
 
 function parseArgs(argv) {
-  const opts = { tools: [], dest: undefined, force: false, dryRun: false, help: false };
+  const opts = {
+    tools: [],
+    dest: undefined,
+    force: false,
+    dryRun: false,
+    gitignore: false,
+    help: false,
+  };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     switch (arg) {
@@ -60,6 +71,9 @@ function parseArgs(argv) {
         break;
       case "--dry-run":
         opts.dryRun = true;
+        break;
+      case "--gitignore":
+        opts.gitignore = true;
         break;
       case "-h":
       case "--help":
@@ -88,6 +102,7 @@ function main() {
     destRoot,
     force: opts.force,
     dryRun: opts.dryRun,
+    gitignore: opts.gitignore,
   });
 
   const toolLabels = opts.tools.map((t) => TOOLS[t].label).join(", ");
@@ -107,10 +122,15 @@ function main() {
     (byStatus[r.status] || (byStatus[r.status] = [])).push(r.relPath);
   }
 
+  const appendedNote = (r) =>
+    r === ".gitignore" ? "(materialised-file patterns added)" : "(@MARCOS-AI-BOOTSTRAP.md include added)";
+  const wiredNote = (r) =>
+    r === ".gitignore" ? "(already ignores materialised files)" : "(already references MARCOS-AI-BOOTSTRAP.md)";
+
   for (const r of byStatus.created) console.log(`  created      ${r}`);
   for (const r of byStatus.overwritten) console.log(`  overwritten  ${r}`);
-  for (const r of byStatus.appended) console.log(`  appended     ${r} (@MARCOS-AI-BOOTSTRAP.md include added)`);
-  for (const r of byStatus["already-wired"]) console.log(`  ok           ${r} (already references MARCOS-AI-BOOTSTRAP.md)`);
+  for (const r of byStatus.appended) console.log(`  appended     ${r} ${appendedNote(r)}`);
+  for (const r of byStatus["already-wired"]) console.log(`  ok           ${r} ${wiredNote(r)}`);
   for (const r of byStatus["skipped-exists"]) console.log(`  skipped      ${r} (already exists, use --force to overwrite)`);
   for (const r of byStatus["missing-source"]) console.log(`  MISSING      ${r} (not bundled in this package)`);
 

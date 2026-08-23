@@ -133,10 +133,10 @@ cannot edit locally, so it watches, diagnoses, and reports the fix back to the u
 **Guardrails:** Never implements or writes code. Stage 2 runs only after the user approves the Stage 1 outline. Only the `planner` agent writes to `documents/plans/`. Hands off to the `implement` skill for execution.
 
 ### implement
-**Purpose:** Execute an existing plan from `documents/plans/` (path passed by the user, e.g. `documents/plans/20260622-ui-bugs.md`), dispatching each phase to the agent the plan designates and using the branch the plan names.
-**Target resolution:** Required plan file path. Parses branch, phases, designated agent per phase, files, and acceptance criteria from the plan.
-**Pipeline:** For each phase in order, route to the plan's designated canonical agent (`code` / `docs` / `infra` / `test-runner` / `explorer` / etc.); verify acceptance criteria before advancing.
-**Guardrails:** Never commits or pushes — agents edit files, the user commits. Never works on `main` (uses the plan's branch). Honours each phase's agent designation exactly; stops on a failed phase.
+**Purpose:** Execute an existing plan from `documents/plans/` (path passed by the user, e.g. `documents/plans/20260622-ui-bugs.md`), dispatching each phase's agent(s) to the plan's designation and using the branch the plan names.
+**Target resolution:** Required plan file path. Parses branch, phases, designated agent(s) per phase, parallelizability, files, tests to write, and acceptance criteria from the plan.
+**Pipeline:** Groups phases into batches — phases the plan marks mutually parallelizable (and that touch disjoint files) run concurrently within a batch; all others run alone. Within a phase, chained agents (e.g. code → test-runner → docs) run strictly in the order the plan lists them, each instructed to validate only with narrow/targeted tests for the files it touches. Once a phase's agents complete, the implement orchestrator itself — never a dispatched subagent — runs the full test suite before checking that phase's acceptance criteria and letting its batch advance.
+**Guardrails:** Never commits or pushes — agents edit files, the user commits. Never works on `main` (uses the plan's branch). Honours each phase's agent designation and order exactly; never batches phases the plan did not mark parallelizable, or phases with overlapping files even if marked parallelizable; stops the batch on any failed phase. Only the orchestrator runs the full test suite — every dispatched subagent is instructed to run narrow/targeted tests only, never the full suite.
 
 ### initialize
 **Purpose:** One-time environment reconciliation. First ensures the tool's instruction file (`CLAUDE.md`, `AGENTS.md`, or `.github/copilot-instructions.md`) references the shipped `MARCOS-AI-BOOTSTRAP.md` rules — appending a short `@MARCOS-AI-BOOTSTRAP.md` include (never overwriting existing content), or creating the file if it does not exist. Discovers applicable MCP servers (via the MCP Servers discovery → policy-check → install flow) and, with user approval, installs and wires them into the `infra` and `planner` agents. Discovers where plan documents actually live in the repo and, after explicit user confirmation, wires the `planner`, `implement`, and `docs` agents/skills to that location. Scans the repository's history (past merged PRs, branch names, commit subjects, and any CONTRIBUTING / PR-template / commit-lint / release-automation config) and, after user confirmation, customises the `pull-request` skill's convention profile to match. Then always prompts the user, via a dropdown, to choose the model for each tier/role — pre-selecting the currently configured model when it is available, or the closest available match when it is not — and rewrites the agent files.
@@ -211,12 +211,18 @@ Model tiers used below:
 
 **Stage 2 — Full Implementation Plan (High tier)**
 - Using the approved outline, produce a complete plan written to `documents/plans/<date>-<topic>.md`.
-- Plan structure: Goal, Constraints, Phases (objective / agent / files / acceptance criteria), Open questions, Risks.
+- Plan structure: Goal, Constraints, Phases (objective / agent(s) / files / tests / acceptance criteria), Open questions, Risks.
+- Keep phases as small and tightly scoped as possible — one coherent outcome per phase.
+- For each phase that changes code, specify the smallest set of tests needed to cover the change.
+- State explicitly, per phase, that its agent(s) run only narrow/targeted tests for the files they touch — never the full test suite. Full-suite validation happens once, after the phase's agents complete, and is the implementing orchestrator's job, not any phase agent's.
+- Identify phases with no shared files or ordering dependency and mark them as parallelizable.
+- A phase may chain multiple agents in sequence (e.g. code → test-runner → docs) when the hand-off is immediate and splitting would break an atomic unit of work; otherwise prefer separate phases.
 - Stop and present the plan. Ask the user for explicit approval before any implementation begins.
 
 **Rules:**
 - Never begin implementation.
 - Specify a branch name in the plan.
+- Prefer more, smaller phases over fewer large ones; only chain agents within a single phase when the work cannot be usefully split.
 - Cross-reference related notes in `agents/` or existing plans in `documents/plans/`.
 
 ### code
@@ -224,8 +230,10 @@ Model tiers used below:
 **Purpose:** Implements focused code changes — features, bug fixes, explicit refactors.
 **Rules:**
 - Tests first; regression test before fixing a bug.
+- Always write the test first when possible.
 - Smallest change that satisfies the requirement. No surrounding cleanup.
 - Validate with the narrowest relevant test or lint command after each edit.
+- Use concise comments.
 - Do not touch documentation — hand that off to the docs agent.
 
 ### docs

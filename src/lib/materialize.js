@@ -150,27 +150,69 @@ function appendEntry(entry, destRoot, { dryRun }) {
   return { relPath: entry.file, status: "created" };
 }
 
+// Marker heading under which materialised-file ignore patterns are appended to
+// the user's .gitignore. Presence of this marker is how a re-run finds (and
+// extends, rather than duplicates) the block on subsequent invocations.
+const GITIGNORE_MARKER = "# Marcos AI-Bootstrap (materialised files)";
+
+/**
+ * Append any ignore patterns not already present in the destination
+ * .gitignore, under a marker heading (added once). Idempotent: re-running
+ * with the same or a subset of patterns writes nothing further.
+ */
+function writeGitignoreEntries(patterns, destRoot, { dryRun }) {
+  const dest = path.join(destRoot, ".gitignore");
+  const exists = fs.existsSync(dest);
+  const current = exists ? fs.readFileSync(dest, "utf8") : "";
+  const currentLines = new Set(current.split(/\r?\n/).map((l) => l.trim()));
+
+  const missing = patterns.filter((p) => !currentLines.has(p));
+  if (missing.length === 0) {
+    return { relPath: ".gitignore", status: exists ? "already-wired" : "created" };
+  }
+
+  const hasMarker = current.includes(GITIGNORE_MARKER);
+  const block = (hasMarker ? "" : GITIGNORE_MARKER + "\n") + missing.join("\n") + "\n";
+
+  if (!dryRun) {
+    const sep = current.length === 0 ? "" : current.endsWith("\n") ? "\n" : "\n\n";
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.appendFileSync(dest, sep + block);
+  }
+  return { relPath: ".gitignore", status: exists ? "appended" : "created" };
+}
+
 /**
  * Materialise the requested tools' agent/skill files, plus the tool-agnostic
  * core files (AGENTS.md, HUMAN.md), into destRoot.
  *
  * @param {string[]} tools - subset of Object.keys(TOOLS)
- * @param {object} opts - { destRoot, force, dryRun }
+ * @param {object} opts - { destRoot, force, dryRun, gitignore }
+ *   gitignore: when true, materialised files are added to the destination's
+ *   .gitignore instead of being tracked, and no instruction entry-point
+ *   (AGENTS.md, CLAUDE.md, .github/copilot-instructions.md) is created or
+ *   amended.
  * @returns {{results: Array, tools: string[]}}
  */
 function materialize(tools, opts = {}) {
   const destRoot = path.resolve(opts.destRoot || process.cwd());
   const force = !!opts.force;
   const dryRun = !!opts.dryRun;
+  const gitignore = !!opts.gitignore;
 
   const results = [];
+  const ignorePatterns = [];
 
   for (const cf of CORE_FILES) {
     results.push(copyOne(cf.src, cf.dest, destRoot, { force, dryRun }));
+    ignorePatterns.push(cf.dest);
   }
 
-  // AGENTS.md is wired on every invocation as the universal entry-point.
-  results.push(appendEntry(CORE_ENTRY, destRoot, { dryRun }));
+  // AGENTS.md is wired on every invocation as the universal entry-point,
+  // unless --gitignore asked us not to touch the user's instruction files.
+  if (!gitignore) {
+    results.push(appendEntry(CORE_ENTRY, destRoot, { dryRun }));
+  }
 
   for (const toolName of tools) {
     const tool = TOOLS[toolName];
@@ -185,13 +227,25 @@ function materialize(tools, opts = {}) {
         const destRel = path.posix.join(toPosix(dir), rel);
         results.push(copyOne(srcRel, destRel, destRoot, { force, dryRun }));
       }
+      ignorePatterns.push(toPosix(dir) + "/");
     }
-    if (tool.entry) {
+    if (tool.entry && !gitignore) {
       results.push(appendEntry(tool.entry, destRoot, { dryRun }));
     }
+  }
+
+  if (gitignore) {
+    results.push(writeGitignoreEntries(ignorePatterns, destRoot, { dryRun }));
   }
 
   return { results, tools, destRoot };
 }
 
-module.exports = { materialize, TOOLS, CORE_FILES, CORE_ENTRY, PACKAGE_ROOT };
+module.exports = {
+  materialize,
+  TOOLS,
+  CORE_FILES,
+  CORE_ENTRY,
+  PACKAGE_ROOT,
+  GITIGNORE_MARKER,
+};
