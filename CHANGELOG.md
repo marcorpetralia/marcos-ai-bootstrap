@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.11](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.10...marcos-ai-bootstrap-v0.1.11) (2026-08-25)
+
+
+### Features
+
+* removed ambiguity from requirements and created a human review … ([fd568bf](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/fd568bfd4690aa51c2b362eb15650cea0f05edcd))
+* removed ambiguity from requirements and created a human review section ([0cc59be](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/0cc59bebb881a763ad138298d3ff648a465da174))
+
 ## [0.1.10](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.9...marcos-ai-bootstrap-v0.1.10) (2026-08-23)
 
 
