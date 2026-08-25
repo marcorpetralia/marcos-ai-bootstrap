@@ -13,8 +13,10 @@ Before drafting the plan, check whether any discovered, policy-approved MCP serv
 ## Plan template
 Before drafting, read `documents/templates/plan-template.md` and follow its
 section structure exactly (title, metadata block, Goal, Constraints +
-Cross-references, Phases, Open questions, Risks). If the template is missing
-from the target repo, fall back to the "Plan structure" section below.
+Cross-references, Phases, Implementation notes, and a trailing Human Review
+section containing Open questions, Assumptions made, and Risks). If the
+template is missing from the target repo, fall back to the "Plan structure"
+section below.
 
 ## File naming
 - Name the plan file `<YYYYMMDD>-<topic>.md` using today's date with no separators in the date, e.g. `20260408-calendar.md`.
@@ -24,12 +26,15 @@ from the target repo, fall back to the "Plan structure" section below.
 1. Goal — one paragraph describing what success looks like.
 2. Constraints — guardrails, dependencies, deadlines, branch name.
 3. Phases — ordered list, each with: objective, agent(s) to use, files touched, tests to write, acceptance criteria.
-4. Open questions — anything still needing user input before implementation.
-5. Risks — known unknowns or risky assumptions.
+4. Implementation notes — empty placeholder section for agents to log discoveries during execution.
+5. Human Review, placed last — Open questions, Assumptions made (unconfirmed), Risks.
+
+**All human-facing content goes last:** open questions and unconfirmed assumptions belong in the single trailing Human Review section, never earlier in the plan. Nothing in Goal, Constraints, or Phases should require a mid-implementation decision from the user; a phase that truly cannot proceed without one is the rare exception, not the default.
 
 ## Phase discipline
 - Keep each phase as small and tightly scoped as possible — one coherent outcome per phase, not a bundle of unrelated changes.
 - For any phase that changes code, specify the smallest set of tests that covers the change — no more than necessary, but never skip coverage the change needs.
+- Every acceptance criterion must be a requirement the user explicitly stated or one strictly implied by the task. Never encode an inferred, unconfirmed property (a latency bound, a scale target, a specific UX choice, etc.) as a blocking acceptance criterion — record it as an assumption in the Human Review section instead, phrased as a desired outcome, not a requirement.
 - State explicitly, per phase, that its agent(s) run only narrow/targeted tests for the files they touch — never the project's full test suite. Full-suite validation happens once, after the phase's agents complete, and is the implementing orchestrator's job, not any phase agent's.
 - Identify phases that touch disjoint files with no ordering dependency on each other and mark them explicitly as parallelizable (e.g. "Can run in parallel with Phase 3").
 - A single phase may chain multiple agents in sequence (e.g. code → test-runner → docs) when the hand-off is immediate and splitting would break an atomic unit of work. Otherwise, prefer separate phases over bundling agents.
@@ -48,4 +53,5 @@ When naming phase agents, mention only custom agents materialised under `.codex/
 - Do not begin implementation. Present the written plan and ask for explicit user approval.
 - Prefer more, smaller phases over fewer large ones; only chain agents within a single phase when the work cannot be usefully split.
 - Cross-reference related notes in agents/ or existing plans in documents/plans/.
+- Never invent or assert a requirement the user did not state — any inferred nonfunctional target (latency, throughput, scale, uptime, etc.) is a desired outcome recorded under Human Review, never a blocking acceptance criterion.
 """

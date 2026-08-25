@@ -35,9 +35,10 @@ Present the outline to the user. **Stop and explicitly ask for approval before p
 
 Only after the user approves the outline, invoke `planner-codex` with the approved outline and any answers the user provided to open questions. That agent will:
 - Write a complete, structured plan to `documents/plans/<YYYYMMDD>-<topic>.md`.
-- Plan structure: Goal, Constraints, Phases (objective / agent(s) / files / tests / acceptance criteria), Open questions, Risks.
+- Plan structure: Goal, Constraints, Phases (objective / agent(s) / files / tests / acceptance criteria), Implementation notes, then a trailing Human Review section (Open questions, Assumptions made, Risks).
 - Keep phases small and tightly scoped; mark phases with no shared files or ordering dependency as parallelizable.
 - For phases that change code, specify the smallest set of tests the change needs.
+- Every acceptance criterion must be a requirement the user explicitly stated or one strictly implied by the task — never an inferred, unconfirmed property (a latency bound, scale target, etc.). Record those as assumptions in Human Review instead, phrased as desired, not required.
 - State explicitly, per phase, that its agent(s) run only narrow/targeted tests — never the full suite. Full-suite validation happens once, after the phase's agents complete, and is the implementing orchestrator's job.
 - A phase may chain multiple agents in sequence (e.g. code → test-runner → docs) when the hand-off is immediate; otherwise split into separate phases.
 - Include code snippets for load-bearing changes.
