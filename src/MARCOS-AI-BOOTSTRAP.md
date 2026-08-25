@@ -130,13 +130,14 @@ cannot edit locally, so it watches, diagnoses, and reports the fix back to the u
 ### planner
 **Purpose:** Formalise the two-stage planning flow into a single command. Runs the `planner-discovery` agent (Stage 1: clarifying questions + outline), gates on explicit user approval, then runs the `planner` agent (Stage 2: full implementation plan written to `documents/plans/<YYYYMMDD>-<topic>.md`).
 **Pipeline:** `planner-discovery` → (user approval) → `planner`.
-**Guardrails:** Never implements or writes code. Stage 2 runs only after the user approves the Stage 1 outline. Only the `planner` agent writes to `documents/plans/`. Hands off to the `implement` skill for execution.
+**Guardrails:** Never implements or writes code. Stage 2 runs only after the user approves the Stage 1 outline. Only the `planner` agent writes to `documents/plans/`. Never asserts a requirement the user did not state — any inferred nonfunctional target (latency, throughput, scale, uptime, etc.) is recorded as a desired outcome in the plan's trailing Human Review section, never as a blocking acceptance criterion. Hands off to the `implement` skill for execution.
 
 ### implement
 **Purpose:** Execute an existing plan from `documents/plans/` (path passed by the user, e.g. `documents/plans/20260622-ui-bugs.md`), dispatching each phase's agent(s) to the plan's designation and using the branch the plan names.
 **Target resolution:** Required plan file path. Parses branch, phases, designated agent(s) per phase, parallelizability, files, tests to write, and acceptance criteria from the plan.
 **Pipeline:** Groups phases into batches — phases the plan marks mutually parallelizable (and that touch disjoint files) run concurrently within a batch; all others run alone. Within a phase, chained agents (e.g. code → test-runner → docs) run strictly in the order the plan lists them, each instructed to validate only with narrow/targeted tests for the files it touches. Once a phase's agents complete, the implement orchestrator itself — never a dispatched subagent — runs the full test suite before checking that phase's acceptance criteria and letting its batch advance.
 **Guardrails:** Never commits or pushes — agents edit files, the user commits. Never works on `main` (uses the plan's branch). Honours each phase's agent designation and order exactly; never batches phases the plan did not mark parallelizable, or phases with overlapping files even if marked parallelizable; stops the batch on any failed phase. Only the orchestrator runs the full test suite — every dispatched subagent is instructed to run narrow/targeted tests only, never the full suite.
+**Unverified assumptions:** an unstated assumption or an unconfirmed, non-blocking requirement (e.g. a performance target no one confirmed) surfacing mid-phase is not a failed acceptance criterion — the phase's agent implements the smallest change that satisfies what the user actually stated, logs the assumption as a note in the plan's Human Review section, and continues. Only genuine failures (broken code, failing tests, an explicitly stated acceptance criterion left unmet, or a phase that truly cannot proceed without missing information such as credentials) stop a batch. At the end of the run, the orchestrator compiles every logged note into one Human Review summary for the user — it never pauses mid-run to relitigate an assumption.
 
 ### initialize
 **Purpose:** One-time environment reconciliation. First ensures the tool's instruction file (`CLAUDE.md`, `AGENTS.md`, or `.github/copilot-instructions.md`) references the shipped `MARCOS-AI-BOOTSTRAP.md` rules — appending a short `@MARCOS-AI-BOOTSTRAP.md` include (never overwriting existing content), or creating the file if it does not exist. Discovers applicable MCP servers (via the MCP Servers discovery → policy-check → install flow) and, with user approval, installs and wires them into the `infra` and `planner` agents. Discovers where plan documents actually live in the repo and, after explicit user confirmation, wires the `planner`, `implement`, and `docs` agents/skills to that location. Scans the repository's history (past merged PRs, branch names, commit subjects, and any CONTRIBUTING / PR-template / commit-lint / release-automation config) and, after user confirmation, customises the `pull-request` skill's convention profile to match. Then always prompts the user, via a dropdown, to choose the model for each tier/role — pre-selecting the currently configured model when it is available, or the closest available match when it is not — and rewrites the agent files.
@@ -205,19 +206,23 @@ Model tiers used below:
 
 **Stage 1 — Discovery & Outline (Standard tier)**
 - Ask lots of clarifying questions — be exhaustive. The goal of Stage 1 is to find out everything about what the user has asked for: scope and boundaries, expected behaviour and edge cases, inputs and outputs, affected components, constraints, dependencies, and success criteria. Do not assume — surface every ambiguity and keep asking until nothing material about the task is left unknown.
+- Never invent or assert a requirement the user did not state — this includes implicit nonfunctional targets (latency, throughput, scale, uptime, etc.) that seem "obviously" desirable. If such a property seems relevant, raise it as an explicit open question rather than assuming an answer.
 - Explore the codebase and any relevant context.
 - Produce a concise outline: goal, high-level phases, open questions.
 - Stop and present the outline. Ask the user for explicit approval to proceed to Stage 2.
 
 **Stage 2 — Full Implementation Plan (High tier)**
 - Using the approved outline, produce a complete plan written to `documents/plans/<date>-<topic>.md`.
-- Plan structure: Goal, Constraints, Phases (objective / agent(s) / files / tests / acceptance criteria), Open questions, Risks.
+- Plan structure: Goal, Constraints, Phases (objective / agent(s) / files / tests / acceptance criteria), then a single Human Review section placed last (Open questions, Assumptions made, Risks) — see the "All human-facing content goes last" rule below.
 - Keep phases as small and tightly scoped as possible — one coherent outcome per phase.
 - For each phase that changes code, specify the smallest set of tests needed to cover the change.
+- Every acceptance criterion must be a requirement the user explicitly stated or one strictly implied by the task. Never encode an inferred, unconfirmed property (a latency bound, a scale target, a specific UX choice, etc.) as a blocking acceptance criterion — record it instead as an assumption in the Human Review section, phrased as a *desired* outcome, not a requirement.
 - State explicitly, per phase, that its agent(s) run only narrow/targeted tests for the files they touch — never the full test suite. Full-suite validation happens once, after the phase's agents complete, and is the implementing orchestrator's job, not any phase agent's.
 - Identify phases with no shared files or ordering dependency and mark them as parallelizable.
 - A phase may chain multiple agents in sequence (e.g. code → test-runner → docs) when the hand-off is immediate and splitting would break an atomic unit of work; otherwise prefer separate phases.
 - Stop and present the plan. Ask the user for explicit approval before any implementation begins.
+
+**All human-facing content goes last:** every section that asks something of a human — open questions and unconfirmed assumptions — belongs in one "Human Review" section at the very end of the plan, after Risks. Nothing earlier in the plan (Goal, Constraints, Phases) should require a mid-implementation decision from the user; if a phase truly cannot proceed without one, that is the rare exception, not the default.
 
 **Rules:**
 - Never begin implementation.
@@ -235,6 +240,7 @@ Model tiers used below:
 - Validate with the narrowest relevant test or lint command after each edit.
 - Use concise comments.
 - Do not touch documentation — hand that off to the docs agent.
+- If an acceptance criterion or plan detail turns out to rest on an unstated assumption (e.g. an unconfirmed performance target), do not halt to ask: implement the smallest change that satisfies what the user actually stated, log the assumption as a note for the plan's Human Review section, and continue. Stop outright only when the phase truly cannot proceed without the missing information (e.g. missing credentials, an irreversible or destructive choice).
 
 ### docs
 **Tier:** Fast

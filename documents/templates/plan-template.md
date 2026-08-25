@@ -48,14 +48,49 @@ run once, after the phase's agents complete, by the implementing orchestrator it
 **Design:** <!-- optional: fenced code snippets for load-bearing changes -->
 
 **Acceptance criteria:**
+<!-- Every criterion here must be a requirement the user explicitly stated, or one strictly implied
+by the task. Never encode an inferred, unconfirmed property (a latency bound, a scale target, a
+specific UX choice, etc.) as a blocking acceptance criterion — record it as an assumption in
+Human Review below instead, phrased as a desired outcome, not a requirement. -->
 - <verifiable outcome>
 
-## Open questions
+## 4. Implementation notes
 
-<!-- Anything still needing user input before implementation. -->
+<!--
+Filled in during execution, not during planning. If an implementing agent discovers an unstated
+assumption, an ambiguity, or an unverified/unconfirmed requirement (e.g. a performance target no
+one actually confirmed), it does not pause the phase to ask — it proceeds with the most
+conservative interpretation that satisfies what the user actually stated, and appends a note here.
+Only a genuine failure (broken code, failing tests, an explicitly stated acceptance criterion left
+unmet, or missing information the phase truly cannot proceed without) stops a phase.
+-->
+- <note, or leave empty if none arose>
+
+## 5. Human Review
+
+<!--
+Everything a human needs to weigh in on lives here, and only here, at the end of the plan. Nothing
+above this section should require the user's input mid-implementation. This section is read once,
+after planning (Open questions, Risks) and again after implementation (Assumptions made) — it is
+never a mid-run blocker.
+-->
+
+### Open questions
+
+<!-- Anything still needing user input before implementation begins. -->
 - <question>
 
-## Risks
+### Assumptions made (unconfirmed)
+
+<!--
+Anything the planner or an implementing agent inferred rather than the user stating it outright —
+phrased as a desire, not a requirement. Populated during planning and appended to during
+implementation (mirrors "Implementation notes" above). Never treat an entry here as met/unmet;
+it is a flag for the user to confirm or reject, not a pass/fail gate.
+-->
+- <assumption> — treated as: desired, not required, until confirmed
+
+### Risks
 
 <!-- Known unknowns or risky assumptions. -->
 - <risk>

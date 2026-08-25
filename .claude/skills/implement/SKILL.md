@@ -65,7 +65,8 @@ For each batch, in order:
 2. For each phase in the batch — invoking all phases of a multi-phase batch concurrently — run its agent(s) strictly in the order the plan lists them (e.g. `code-claude` → `test-runner-claude` → `docs-claude`), passing each agent the phase objective, relevant files, the tests to write, and the acceptance criteria. Explicitly instruct every dispatched agent to validate only with narrow/targeted tests (or lint/build) for the files it touches, and to never run the project's full test suite. Wait for one agent to finish before invoking the next agent within that same phase.
 3. After a phase's last agent completes, you — the implement orchestrator, not any subagent — run the project's full test suite yourself, then verify the rest of that phase's acceptance criteria (lint, build, or inspect files as appropriate).
 4. Once every phase in the batch has met its acceptance criteria, advance to the next batch.
-5. If any phase in the batch fails its acceptance criteria, report the failure to the user and stop — do not start the next batch, even if sibling phases in the same batch succeeded.
+5. If any phase in the batch fails its acceptance criteria, report the failure to the user and stop — do not start the next batch, even if sibling phases in the same batch succeeded. An unstated assumption or unconfirmed, non-blocking requirement surfacing mid-phase (e.g. a performance target no one confirmed) is not a failure: it does not trigger this stop. Have the phase's agent log it as a note in the plan's Implementation notes section and continue with the most conservative interpretation of what the user actually stated. Reserve the stop for genuine failures — broken code, failing tests, an explicitly stated acceptance criterion left unmet, or missing information the phase truly cannot proceed without.
+6. After the final batch completes (or the run stops on a genuine failure), compile every logged Implementation note into a single Human Review summary and present it to the user — never pause mid-run to relitigate an assumption.
 
 ## Guardrails
 - Always work on the branch the plan names. Never work on `main`.
@@ -74,4 +75,4 @@ For each batch, in order:
 - Never substitute a different agent than what the plan designates, and run a phase's chained agents strictly in the plan's listed order.
 - Never batch together phases the plan did not mark mutually parallelizable, or phases with overlapping files even if the plan marks them parallelizable.
 - Only you, the orchestrator, run the full test suite — every dispatched agent is instructed to run narrow/targeted tests only, never the full suite.
-- Stop immediately on a failed phase and report clearly.
+- Stop immediately on a genuine failed phase and report clearly. Never stop a batch solely because an agent surfaced an unconfirmed assumption — log it in Implementation notes and continue.
