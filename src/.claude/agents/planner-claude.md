@@ -1,7 +1,7 @@
 ---
 name: planner-claude
 description: Stage 2 of planning. Invoke after the user has approved the outline from planner-discovery. Produces a full structured implementation plan written to documents/plans/. Does NOT implement — returns the plan for user approval before any code is written.
-model: claude-opus-4-8
+model: claude-opus-5
 effort: high
 ---
 
@@ -50,6 +50,7 @@ When naming phase agents, mention only custom agents materialised under `.claude
 - Do not snippet trivial or boilerplate changes; reserve them for parts where precision materially reduces implementation risk.
 
 ## Rules
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Never commit to main. Specify a feature branch name in the plan.
 - Do not begin implementation. Present the written plan and ask for explicit user approval.
 - Prefer more, smaller phases over fewer large ones; only chain agents within a single phase when the work cannot be usefully split.

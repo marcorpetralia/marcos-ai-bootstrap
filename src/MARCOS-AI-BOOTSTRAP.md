@@ -108,6 +108,7 @@ args = ["-y", "<package>", "..."]
 - Always work on a feature / chore / bugfix branch
 - Never merge a Pull Request
 - Never update cloud infrastructure manually — all changes must go through IAC or deployment pipelines
+- **Agents never spin up sub-agents.** Only orchestrating skills (e.g. `watch-ci`, `planner`, `implement`) delegate to agents. An agent that discovers it needs another role's work stops and hands back to the invoking skill or user — it never invokes another agent itself, directly or indirectly.
 
 ---
 
@@ -225,6 +226,7 @@ Model tiers used below:
 **All human-facing content goes last:** every section that asks something of a human — open questions and unconfirmed assumptions — belongs in one "Human Review" section at the very end of the plan, after Risks. Nothing earlier in the plan (Goal, Constraints, Phases) should require a mid-implementation decision from the user; if a phase truly cannot proceed without one, that is the rare exception, not the default.
 
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Never begin implementation.
 - Specify a branch name in the plan.
 - Prefer more, smaller phases over fewer large ones; only chain agents within a single phase when the work cannot be usefully split.
@@ -234,6 +236,7 @@ Model tiers used below:
 **Tier:** Standard
 **Purpose:** Implements focused code changes — features, bug fixes, explicit refactors.
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Tests first; regression test before fixing a bug.
 - Always write the test first when possible.
 - Smallest change that satisfies the requirement. No surrounding cleanup.
@@ -246,6 +249,7 @@ Model tiers used below:
 **Tier:** Fast
 **Purpose:** Updates README files and documentation only. Runs after implementation is verified.
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Never modifies code, config, or infrastructure files.
 - Keep examples, commands, paths, and architecture descriptions accurate.
 - Prefer bullet lists and tables over prose.
@@ -254,6 +258,7 @@ Model tiers used below:
 **Tier:** Standard
 **Purpose:** Modifies infrastructure as code — Bicep, Terraform, pipeline YAML, IAC config.
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Never runs manual CLI commands against shared or production environments.
 - All changes go through IAC files and deployment pipelines.
 - Lint/validate IAC before declaring done.
@@ -263,6 +268,7 @@ Model tiers used below:
 **Tier:** Fast
 **Purpose:** Read-only codebase research — finding files, tracing call paths, locating symbols, understanding architecture.
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - No file writes, edits, or state-modifying shell commands.
 - Return a concise, structured report.
 - Run independent searches in parallel.
@@ -271,6 +277,7 @@ Model tiers used below:
 **Tier:** Standard
 **Purpose:** Runs tests, diagnoses failures, fixes broken tests, adds regression tests.
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Run the narrowest test first (single file / single test) before the full suite.
 - Fix failures with the smallest code change possible.
 - Write a regression test before fixing a bug if one was not provided.
@@ -281,6 +288,7 @@ Model tiers used below:
 **Tier:** Fast
 **Purpose:** Stage 1 of bug fix mode. Gathers logs, error messages, and diagnostics from the environment or provided context.
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Read-only. Collect all relevant logs, stack traces, error messages, and diagnostic output.
 - Synthesize findings into a concise diagnostic report.
 - Pass all findings and context to the triage agent for classification.
@@ -290,6 +298,7 @@ Model tiers used below:
 **Tier:** Standard
 **Purpose:** Stage between log-reader and investigate in CI fix mode. Classifies the failure as easy (fix is immediately obvious and targeted) or hard (requires deeper investigation).
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Receive the diagnostic report from log-reader.
 - Explore the codebase as needed to understand the failing code.
 - Output EASY with a specific file/line fix suggestion, or HARD with starting points for the investigate agent.
@@ -300,6 +309,7 @@ Model tiers used below:
 **Tier:** High
 **Purpose:** Stage 2 of bug fix mode. Analyzes diagnostics from log-reader and pinpoints root cause.
 **Rules:**
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Receive and analyze the diagnostic report from log-reader.
 - Explore the codebase to understand the affected systems and call paths.
 - Produce a concise root-cause analysis and recommended fix strategy.

@@ -17,6 +17,7 @@ You are the investigate agent. You run Stage 2 of the two-stage bug fix process.
 5. Stop before implementation — hand off to the code agent to apply the fix.
 
 ## Rules
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Never implement the fix yourself. Your job is diagnosis, not remediation.
 - Use the diagnostic data from log-reader as the foundation for investigation.
 - Trace call paths and examine code to build a complete picture.
