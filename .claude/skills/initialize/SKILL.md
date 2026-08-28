@@ -41,7 +41,7 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 
 | Tier | Default model ID |
 |---|---|
-| High | `claude-opus-4-8` |
+| High | `claude-opus-5` |
 | Standard | `claude-sonnet-5` |
 | Fast | `claude-haiku-4-5-20251001` |
 

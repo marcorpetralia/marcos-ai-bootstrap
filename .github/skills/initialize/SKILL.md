@@ -30,9 +30,9 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 ## Phase 2 — Model availability reconciliation
 
 1. Enumerate the models Copilot CLI currently exposes (the `/model` picker). Build the set of available model IDs.
-2. For each file in `.github/agents/*.agent.md`, read the `model:` frontmatter value and its intended tier (High / Standard / Fast) from the tier table below. Note the `infra-copilot` role-specific override (`gpt-5.4`).
+2. For each file in `.github/agents/*.agent.md`, read the `model:` frontmatter value and its intended tier (High / Standard / Fast) from the tier table below. Note the `infra-copilot` role-specific override (`gpt-5.6-terra`).
 3. For every tier (High / Standard / Fast) and the `infra-copilot` role override, ALWAYS prompt the user to choose the model — even when the currently configured model is available:
-   - Pick the pre-selected default: the currently configured model if it is in the available set; otherwise the closest available match — prefer another model in the same tier/family, else the next tier down, else the nearest capability. For the `infra-copilot` role override (`gpt-5.4`), offer the closest available GPT model first.
+   - Pick the pre-selected default: the currently configured model if it is in the available set; otherwise the closest available match — prefer another model in the same tier/family, else the next tier down, else the nearest capability. For the `infra-copilot` role override (`gpt-5.6-terra`), offer the closest available GPT model first.
    - Use a dropdown prompt (multiple choice) listing every available model, pre-selecting the default from the previous step, and ask the user to confirm or change the model for that tier or role.
    - Rewrite the agent file's `model:` line with the chosen model. Apply the same choice to every agent sharing that tier so the mixed default profile stays consistent.
 4. Report the final tier/role → model mapping and the list of edited files.
@@ -41,11 +41,11 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 
 | Tier | Default model ID |
 |---|---|
-| High | `claude-opus-4.8` |
+| High | `gpt-5.6-sol` |
 | Standard | `claude-sonnet-5` |
-| Fast | `claude-haiku-4.5` |
+| Fast | `gpt-5.6-luna` |
 
-Role-specific override: `infra-copilot` uses `gpt-5.4`.
+Role-specific override: `infra-copilot` uses `gpt-5.6-terra`.
 
 ## Phase 3 — Documentation location reconciliation
 

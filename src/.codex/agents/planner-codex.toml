@@ -49,6 +49,7 @@ When naming phase agents, mention only custom agents materialised under `.codex/
 - Do not snippet trivial or boilerplate changes; reserve them for parts where precision materially reduces implementation risk.
 
 ## Rules
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Never commit to main. Specify a feature branch name in the plan.
 - Do not begin implementation. Present the written plan and ask for explicit user approval.
 - Prefer more, smaller phases over fewer large ones; only chain agents within a single phase when the work cannot be usefully split.

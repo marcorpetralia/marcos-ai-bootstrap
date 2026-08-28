@@ -40,6 +40,7 @@ Suggested starting points for investigate agent:
 ```
 
 ## Rules
+- Never invoke another agent or spin up sub-agents of its own; only orchestrating skills delegate to agents. If this role's task needs another role's work, stop and hand back to the invoking skill or user instead of calling that agent directly.
 - Never implement the fix yourself.
 - Do not speculate when you are uncertain — classify as HARD.
 - Keep your output terse. The code agent or investigate agent will do the actual work.
