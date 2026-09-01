@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.12](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.11...marcos-ai-bootstrap-v0.1.12) (2026-09-01)
+
+
+### Bug Fixes
+
+* trigger release for skipped chore-only release cycle ([61f7d2e](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/61f7d2e301bea84ec778690b9db75b0101774164))
+* trigger release for skipped chore-only release cycle ([22a2c39](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/22a2c39c33df76a43aa6748be8857fcaed65aecb))
+
 ## [0.1.11](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.10...marcos-ai-bootstrap-v0.1.11) (2026-08-25)
 
 
