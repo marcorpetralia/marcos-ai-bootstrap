@@ -1,7 +1,7 @@
 ---
 name: planner-claude
 description: Stage 2 of planning. Invoke after the user has approved the outline from planner-discovery. Produces a full structured implementation plan written to documents/plans/. Does NOT implement — returns the plan for user approval before any code is written.
-model: claude-opus-5
+model: claude-opus-5-5
 effort: high
 ---
 
