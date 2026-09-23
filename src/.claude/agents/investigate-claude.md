@@ -1,7 +1,7 @@
 ---
 name: investigate-claude
 description: Stage 2 of the bug fix pipeline. Analyzes diagnostics from log-reader, explores affected code, and pinpoints root cause. Does NOT implement — hands off to code agent for the fix.
-model: claude-opus-5
+model: claude-opus-5-5
 effort: medium
 ---
 

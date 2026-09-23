@@ -16,7 +16,7 @@ The MCP server discovery → policy-check → install/verify flow is defined in 
 
 | Tier | Model ID |
 |---|---|
-| High | `claude-opus-5` |
+| High | `claude-opus-5-5` |
 | Standard | `claude-sonnet-5` |
 | Fast | `claude-haiku-4-5-20251001` |
 
@@ -64,7 +64,7 @@ You are the planner-discovery agent. You run Stage 1 of the two-stage planning p
 ---
 name: planner-claude
 description: Stage 2 of planning. Invoke after the user has approved the outline from planner-discovery. Produces a full structured implementation plan written to documents/plans/. Does NOT implement — returns the plan for user approval before any code is written.
-model: claude-opus-5
+model: claude-opus-5-5
 effort: high
 ---
 
@@ -273,7 +273,7 @@ You are the log-reader agent. You run Stage 1 of the two-stage bug fix process.
 ---
 name: investigate-claude
 description: Stage 2 of the bug fix pipeline. Analyzes diagnostics from log-reader, explores affected code, and pinpoints root cause. Does NOT implement — hands off to code agent for the fix.
-model: claude-opus-5
+model: claude-opus-5-5
 effort: medium
 ---
 
@@ -642,7 +642,7 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 
 | Tier | Default model ID |
 |---|---|
-| High | `claude-opus-5` |
+| High | `claude-opus-5-5` |
 | Standard | `claude-sonnet-5` |
 | Fast | `claude-haiku-4-5-20251001` |
 
