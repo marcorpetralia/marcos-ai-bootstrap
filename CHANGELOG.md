@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.13](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.12...marcos-ai-bootstrap-v0.1.13) (2026-09-23)
+
+
+### Features
+
+* **agents:** default claude high tier to opus 5.5 ([97bd475](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/97bd4751d3297a38db3263b8a9fc5ad759852f6b))
+* **agents:** default claude high tier to opus 5.5 ([367455e](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/367455ecd0574cdcc1297cfd6fd06cd77917343c))
+
 ## [0.1.12](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.11...marcos-ai-bootstrap-v0.1.12) (2026-09-01)
 
 
