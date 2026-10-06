@@ -42,7 +42,7 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 | Tier | Default model ID |
 |---|---|
 | High | `gpt-5.6-sol` |
-| Standard | `claude-sonnet-5` |
+| Standard | `claude-sonnet-5-5` |
 | Fast | `gpt-5.6-luna` |
 
 Role-specific override: `infra-copilot` uses `gpt-5.6-terra`.

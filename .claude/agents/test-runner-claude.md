@@ -1,7 +1,7 @@
 ---
 name: test-runner-claude
 description: Use to run tests, interpret failures, fix broken tests, and add regression tests for bug fixes. Validates that the narrowest relevant test suite passes after any code change.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: low
 ---
 

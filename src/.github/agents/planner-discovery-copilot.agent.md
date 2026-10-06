@@ -1,7 +1,7 @@
 ---
 name: planner-discovery-copilot
 description: Stage 1 of planning. Use first for any multi-phase or architecturally significant task. Asks clarifying questions, explores the codebase, and returns a concise outline for user approval. Does NOT write the full plan — invoke the planner-copilot agent after approval.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: high
 ---
 

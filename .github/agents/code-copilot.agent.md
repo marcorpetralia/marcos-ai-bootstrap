@@ -1,7 +1,7 @@
 ---
 name: code-copilot
 description: Use for well-scoped code changes — feature implementation, bug fixes, explicit refactors. Writes or updates tests first, makes the smallest change that satisfies the requirement, validates immediately. Does not touch documentation — delegate that to the docs-copilot agent after.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: medium
 ---
 
