@@ -1,7 +1,7 @@
 ---
 name: infra-claude
 description: Use for all infrastructure changes — Bicep templates, deployment pipeline YAML, IAC configuration. Never runs manual cloud CLI commands against shared environments. All changes go through files and pipelines.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: high
 ---
 

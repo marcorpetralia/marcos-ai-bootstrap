@@ -17,7 +17,7 @@ The MCP server discovery → policy-check → install/verify flow is defined in 
 | Tier | Model ID |
 |---|---|
 | High | `claude-opus-5-5` |
-| Standard | `claude-sonnet-5` |
+| Standard | `claude-sonnet-5-5` |
 | Fast | `claude-haiku-4-5-20251001` |
 
 **Agent location:** `.claude/agents/<name>.md`
@@ -31,7 +31,7 @@ At the start of every session, verify `.claude/agents/` contains all ten agent f
 ---
 name: planner-discovery-claude
 description: Stage 1 of planning. Use first for any multi-phase or architecturally significant task. Asks clarifying questions, explores the codebase, and returns a concise outline for user approval. Does NOT write the full plan — invoke the planner agent after approval.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: high
 ---
 
@@ -128,7 +128,7 @@ When naming phase agents, mention only custom agents materialised under `.claude
 ---
 name: code-claude
 description: Use for well-scoped code changes — feature implementation, bug fixes, explicit refactors. Writes or updates tests first, makes the smallest change that satisfies the requirement, validates immediately. Does not touch documentation — delegate that to the docs agent after.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: medium
 ---
 
@@ -177,7 +177,7 @@ You are the docs agent. You update documentation only — never code, config, or
 ---
 name: infra-claude
 description: Use for all infrastructure changes — Bicep templates, deployment pipeline YAML, IAC configuration. Never runs manual cloud CLI commands against shared environments. All changes go through files and pipelines.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: high
 ---
 
@@ -222,7 +222,7 @@ You are the explorer agent. You read and search — you never write, edit, or de
 ---
 name: test-runner-claude
 description: Use to run tests, interpret failures, fix broken tests, and add regression tests for bug fixes. Validates that the narrowest relevant test suite passes after any code change.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: low
 ---
 
@@ -305,7 +305,7 @@ You are the investigate agent. You run Stage 2 of the two-stage bug fix process.
 ---
 name: triage-claude
 description: Assesses a CI failure diagnostic report and classifies the fix as easy or hard. Easy → outputs a targeted fix suggestion. Hard → signals that the investigate agent is required for root cause analysis.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: medium
 ---
 
@@ -643,7 +643,7 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 | Tier | Default model ID |
 |---|---|
 | High | `claude-opus-5-5` |
-| Standard | `claude-sonnet-5` |
+| Standard | `claude-sonnet-5-5` |
 | Fast | `claude-haiku-4-5-20251001` |
 
 ## Phase 3 — Documentation location reconciliation
@@ -731,7 +731,7 @@ _Not yet customised. Run the `initialize` skill to scan this repository's histor
 | Tier | Default model ID |
 |---|---|
 | High | `gpt-5.6-sol` |
-| Standard | `claude-sonnet-5` |
+| Standard | `claude-sonnet-5-5` |
 | Fast | `gpt-5.6-luna` |
 
 **Role-specific overrides:**
@@ -756,15 +756,15 @@ At the start of every session:
 
 | Canonical role | Copilot CLI implementation | Default model |
 |---|---|---|
-| planner Stage 1 | Custom `.github/agents/planner-discovery-copilot.agent.md` agent | `claude-sonnet-5` |
+| planner Stage 1 | Custom `.github/agents/planner-discovery-copilot.agent.md` agent | `claude-sonnet-5-5` |
 | planner Stage 2 | Custom `.github/agents/planner-copilot.agent.md` agent | `gpt-5.6-sol` |
-| code | Custom `.github/agents/code-copilot.agent.md` agent | `claude-sonnet-5` |
+| code | Custom `.github/agents/code-copilot.agent.md` agent | `claude-sonnet-5-5` |
 | docs | Custom `.github/agents/docs-copilot.agent.md` agent | `gpt-5.6-luna` |
 | infra | Custom `.github/agents/infra-copilot.agent.md` agent | `gpt-5.6-terra` |
 | explorer | Custom `.github/agents/explorer-copilot.agent.md` agent | `gpt-5.6-luna` |
-| test-runner | Custom `.github/agents/test-runner-copilot.agent.md` agent | `claude-sonnet-5` |
+| test-runner | Custom `.github/agents/test-runner-copilot.agent.md` agent | `claude-sonnet-5-5` |
 | log-reader | Custom `.github/agents/log-reader-copilot.agent.md` agent | `gpt-5.6-luna` |
-| triage | Custom `.github/agents/triage-copilot.agent.md` agent | `claude-sonnet-5` |
+| triage | Custom `.github/agents/triage-copilot.agent.md` agent | `claude-sonnet-5-5` |
 | investigate | Custom `.github/agents/investigate-copilot.agent.md` agent | `gpt-5.6-sol` |
 
 **Prompt source of truth:**
@@ -784,7 +784,7 @@ At the start of every session:
 ---
 name: planner-discovery-copilot
 description: Stage 1 of planning. Use first for any multi-phase or architecturally significant task. Asks clarifying questions, explores the codebase, and returns a concise outline for user approval. Does NOT write the full plan — invoke the planner-copilot agent after approval.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: high
 ---
 
@@ -880,7 +880,7 @@ When naming phase agents, mention only custom agents materialised under `.github
 ---
 name: code-copilot
 description: Use for well-scoped code changes — feature implementation, bug fixes, explicit refactors. Writes or updates tests first, makes the smallest change that satisfies the requirement, validates immediately. Does not touch documentation — delegate that to the docs-copilot agent after.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: medium
 ---
 
@@ -974,7 +974,7 @@ You are the explorer-copilot agent. You read and search — you never write, edi
 ---
 name: test-runner-copilot
 description: Use to run tests, interpret failures, fix broken tests, and add regression tests for bug fixes. Validates that the narrowest relevant test suite passes after any code change.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: low
 ---
 
@@ -1057,7 +1057,7 @@ You are the investigate-copilot agent. You run Stage 2 of the two-stage bug fix 
 ---
 name: triage-copilot
 description: Assesses a CI failure diagnostic report and classifies the fix as easy or hard. Easy → outputs a targeted fix suggestion. Hard → signals that the investigate-copilot agent is required for root cause analysis.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: medium
 ---
 
@@ -1389,7 +1389,7 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 | Tier | Default model ID |
 |---|---|
 | High | `gpt-5.6-sol` |
-| Standard | `claude-sonnet-5` |
+| Standard | `claude-sonnet-5-5` |
 | Fast | `gpt-5.6-luna` |
 
 Role-specific override: `infra-copilot` uses `gpt-5.6-terra`.

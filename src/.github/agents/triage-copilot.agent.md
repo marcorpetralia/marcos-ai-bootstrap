@@ -1,7 +1,7 @@
 ---
 name: triage-copilot
 description: Assesses a CI failure diagnostic report and classifies the fix as easy or hard. Easy → outputs a targeted fix suggestion. Hard → signals that the investigate-copilot agent is required for root cause analysis.
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: medium
 ---
 
