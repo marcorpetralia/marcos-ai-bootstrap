@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.14](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.13...marcos-ai-bootstrap-v0.1.14) (2026-10-06)
+
+
+### Features
+
+* **agents:** default claude and copilot standard tier to sonnet 5.5 ([f91ce0f](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/f91ce0f609a1add5bdfce68922989acd672cbf8d))
+* **agents:** default claude and copilot standard tier to sonnet 5.5 ([50a62cf](https://github.com/marcorpetralia/marcos-ai-bootstrap/commit/50a62cfb74d62eed8302e316d4cc9f9c260816dd))
+
 ## [0.1.13](https://github.com/marcorpetralia/marcos-ai-bootstrap/compare/marcos-ai-bootstrap-v0.1.12...marcos-ai-bootstrap-v0.1.13) (2026-09-23)
 
 
