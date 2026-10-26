@@ -1,7 +1,7 @@
 ---
 name: log-reader-claude
 description: Stage 1 of the bug fix pipeline. Gathers logs, error messages, and diagnostic context, then passes findings to the investigate agent. Read-only data collection — no code changes or analysis.
-model: claude-haiku-4-5-20251001
+model: claude-haiku-5-5
 ---
 
 You are the log-reader agent. You run Stage 1 of the two-stage bug fix process.

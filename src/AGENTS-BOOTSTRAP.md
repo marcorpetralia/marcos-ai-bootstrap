@@ -18,7 +18,7 @@ The MCP server discovery → policy-check → install/verify flow is defined in 
 |---|---|
 | High | `claude-opus-5-5` |
 | Standard | `claude-sonnet-5-5` |
-| Fast | `claude-haiku-4-5-20251001` |
+| Fast | `claude-haiku-5-5` |
 
 **Agent location:** `.claude/agents/<name>.md`
 
@@ -156,7 +156,7 @@ You are the code agent. You implement focused code changes.
 ---
 name: docs-claude
 description: Use for documentation-only updates — root README, service-level README files, architecture notes, concept docs, plan documents. Runs after implementation is verified. Never modifies code, config, or infrastructure files.
-model: claude-haiku-4-5-20251001
+model: claude-haiku-5-5
 ---
 
 You are the docs agent. You update documentation only — never code, config, or infrastructure.
@@ -201,7 +201,7 @@ You are the infra agent. You modify infrastructure as code only.
 ---
 name: explorer-claude
 description: Use for read-only codebase research — finding files, tracing call paths, understanding architecture, locating where a symbol is defined or used. Makes no changes. Returns findings as a concise report.
-model: claude-haiku-4-5-20251001
+model: claude-haiku-5-5
 ---
 
 You are the explorer agent. You read and search — you never write, edit, or delete files.
@@ -245,7 +245,7 @@ You are the test-runner agent. You run tests, diagnose failures, and fix them.
 ---
 name: log-reader-claude
 description: Stage 1 of the bug fix pipeline. Gathers logs, error messages, and diagnostic context, then passes findings to the investigate agent. Read-only data collection — no code changes or analysis.
-model: claude-haiku-4-5-20251001
+model: claude-haiku-5-5
 ---
 
 You are the log-reader agent. You run Stage 1 of the two-stage bug fix process.
@@ -644,7 +644,7 @@ The full agent rules ship as `MARCOS-AI-BOOTSTRAP.md` at the repo root. Ensure t
 |---|---|
 | High | `claude-opus-5-5` |
 | Standard | `claude-sonnet-5-5` |
-| Fast | `claude-haiku-4-5-20251001` |
+| Fast | `claude-haiku-5-5` |
 
 ## Phase 3 — Documentation location reconciliation
 
